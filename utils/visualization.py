@@ -244,7 +244,7 @@ def create_compliance_pie_chart(compliant_count: int, violation_count: int) -> p
     for autotext in autotexts:
         autotext.set_color("white")
 
-    ax.set_title("Current Worker PPE Status", color="white", fontsize=13, fontweight="bold", pad=12)
+    ax.set_title("Current Worker PPE Status", color="white", fontsize=16, fontweight="bold", pad=12)
     plt.tight_layout()
     return fig
 
@@ -271,7 +271,7 @@ def create_violations_by_type_chart(violation_types: Dict[str, int]) -> plt.Figu
         )
 
     ax.set_xlabel("Violation records", color="white", fontsize=10)
-    ax.set_title("Missing PPE by Type", color="white", fontsize=13, fontweight="bold", pad=12)
+    ax.set_title("Missing PPE by Type", color="white", fontsize=16, fontweight="bold", pad=12)
     ax.tick_params(colors="white")
     ax.spines["bottom"].set_color("#333")
     ax.spines["left"].set_color("#333")
@@ -308,13 +308,44 @@ def create_risk_distribution_chart(risk_dist: Dict[str, int]) -> plt.Figure:
         )
 
     ax.set_ylabel("Violation records", color="white", fontsize=10)
-    ax.set_title("Risk Level of PPE Violations", color="white", fontsize=13, fontweight="bold", pad=12)
+    ax.set_title("Risk Level of PPE Violations", color="white", fontsize=16, fontweight="bold", pad=12)
     ax.tick_params(colors="white")
     ax.spines["bottom"].set_color("#333")
     ax.spines["left"].set_color("#333")
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
+    plt.tight_layout()
+    return fig
+
+
+def create_safety_trend_chart(timestamps, violation_counts) -> plt.Figure:
+    """Line chart for recorded safety-event violation counts over time."""
+    fig, ax = plt.subplots(figsize=(10, 3.4))
+    fig.patch.set_facecolor("#0e1117")
+    ax.set_facecolor("#0e1117")
+
+    ax.plot(
+        timestamps,
+        violation_counts,
+        color="#f97316",
+        linewidth=2.5,
+        marker="o",
+        markersize=5,
+        markerfacecolor="#f8fafc",
+        markeredgecolor="#f97316",
+    )
+    ax.fill_between(timestamps, violation_counts, color="#f97316", alpha=0.12)
+    ax.set_ylabel("PPE violations", color="#cbd5e1", fontsize=10)
+    ax.set_xlabel("Recorded time", color="#cbd5e1", fontsize=10)
+    ax.set_title("Recorded PPE Violations Over Time", color="white", fontsize=16, fontweight="bold", pad=12)
+    ax.tick_params(colors="#94a3b8", labelsize=9)
+    ax.grid(axis="y", color="#334155", alpha=0.45, linewidth=0.8)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_color("#334155")
+    ax.spines["bottom"].set_color("#334155")
+    fig.autofmt_xdate()
     plt.tight_layout()
     return fig
 

@@ -25,6 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.config import (
     MODEL_PATH, CLASS_NAMES, DEFAULT_CONFIDENCE_THRESHOLD,
+    PERSON_CONFIDENCE_THRESHOLD, PPE_CONFIDENCE_THRESHOLD, NMS_IOU_THRESHOLD,
     HAZARD_CLASSES, SAFETY_EQUIPMENT_CLASSES, WORKER_CLASSES, HEAVY_OBJECTS,
     HAZARD_BOX_COLOR, SAFETY_BOX_COLOR, WORKER_BOX_COLOR,
     HEAVY_BOX_COLOR, DEFAULT_BOX_COLOR, BOX_THICKNESS, FONT_SCALE,
@@ -148,7 +149,7 @@ class ConstructionDetector:
         self, image: np.ndarray, conf_threshold: float
     ) -> List[Dict]:
         """Core inference logic shared by all public detect_* methods."""
-        results = self.model(image, conf=conf_threshold, verbose=self.verbose)
+        results = self.model(image, conf=conf_threshold, iou=NMS_IOU_THRESHOLD, verbose=self.verbose)
         detections: List[Dict] = []
 
         for result in results:
@@ -158,100 +159,55 @@ class ConstructionDetector:
                 cls_id = int(box.cls[0])
                 cls_name = self.class_names.get(cls_id, f"class_{cls_id}")
                 x1, y1, x2, y2 = box.xyxy[0].tolist()
+                minimum_confidence = self._class_confidence_threshold(cls_name, conf_threshold)
+                confidence = float(box.conf[0])
+                if confidence < minimum_confidence:
+                    continue
                 detections.append({
                     "class_name": cls_name,
                     "class_id": cls_id,
-                    "confidence": float(box.conf[0]),
+                    "confidence": confidence,
                     "bbox": [x1, y1, x2, y2],
                 })
 
-        return self._filter_false_hazards(detections, image)
-
-
-    def _filter_false_hazards(self, detections: List[Dict], image: Optional[np.ndarray] = None) -> List[Dict]:
-        """
-        Non-Regressive Detection & Filter Pipeline:
-        1. Conflict Resolution: Suppress false negative hazard boxes (NO-Hardhat, NO-Mask) if positive gear is present.
-        2. HSV High-Vis Color Verification: Convert NO-Safety Vest to Safety Vest if high-vis orange/yellow pixels exist.
-        3. Worker PPE Verification: Ensures unequipped workers in excavation pits get flagged while protected workers are preserved.
-        """
-        if not detections:
-            return detections
-
-        pos_hardhats = [d for d in detections if d["class_name"] == "Hardhat"]
-        pos_vests = [d for d in detections if d["class_name"] == "Safety Vest"]
-        pos_masks = [d for d in detections if d["class_name"] == "Mask"]
-
-        hsv = None
-        if image is not None and image.size > 0:
-            hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-            lower_orange, upper_orange = np.array([5, 90, 90]), np.array([25, 255, 255])
-            lower_yellow, upper_yellow = np.array([20, 90, 90]), np.array([35, 255, 255])
-
-        cleaned = []
-        for d in detections:
-            name = d["class_name"]
-            box = [int(c) for c in d["bbox"]]
-
-            if name == "NO-Mask" and pos_masks:
-                continue
-            if name == "NO-Hardhat" and pos_hardhats:
-                continue
-            if name == "NO-Safety Vest" and hsv is not None:
-                x1, y1 = max(0, box[0]), max(0, box[1])
-                x2, y2 = min(image.shape[1], box[2]), min(image.shape[0], box[3])
-                if x2 > x1 and y2 > y1:
-                    roi = hsv[y1:y2, x1:x2]
-                    if roi.size > 0:
-                        m_o = cv2.inRange(roi, lower_orange, upper_orange)
-                        m_y = cv2.inRange(roi, lower_yellow, upper_yellow)
-                        if (np.sum(cv2.bitwise_or(m_o, m_y) > 0) / (roi.shape[0] * roi.shape[1])) > 0.03:
-                            cleaned.append({
-                                "class_name": "Safety Vest",
-                                "class_id": 7,
-                                "confidence": d["confidence"],
-                                "bbox": d["bbox"],
-                            })
-                            pos_vests.append(d)
-                            continue
-
-            cleaned.append(d)
-
-        workers = [d for d in detections if d["class_name"] in self.worker_classes]
-        for w in workers:
-            wx1, wy1, wx2, wy2 = [int(c) for c in w["bbox"]]
-            w_h = wy2 - wy1
-            head_box = [wx1, wy1, wx2, wy1 + int(0.35 * w_h)]
-            has_hh = any(self._is_near_worker(hh["bbox"], w["bbox"]) for hh in pos_hardhats)
-            has_mask = any(self._is_near_worker(m["bbox"], w["bbox"]) for m in pos_masks)
-            has_vest = any(self._is_near_worker(v["bbox"], w["bbox"]) for v in pos_vests)
-
-            if not has_vest and hsv is not None:
-                roi = hsv[max(0, wy1):min(image.shape[0], wy2), max(0, wx1):min(image.shape[1], wx2)]
-                if roi.size > 0:
-                    m_o = cv2.inRange(roi, lower_orange, upper_orange)
-                    m_y = cv2.inRange(roi, lower_yellow, upper_yellow)
-                    if (np.sum(cv2.bitwise_or(m_o, m_y) > 0) / (roi.shape[0] * roi.shape[1])) > 0.04:
-                        has_vest = True
-
-            has_no_hh_already = any(d["class_name"] == "NO-Hardhat" and self._is_near_worker(d["bbox"], w["bbox"]) for d in cleaned)
-
-            if not has_hh and not (has_mask and has_vest) and not has_no_hh_already:
-                cleaned.append({
-                    "class_name": "NO-Hardhat",
-                    "class_id": 2,
-                    "confidence": round(w["confidence"], 2),
-                    "bbox": head_box,
-                })
-
-        return cleaned
+        return self._nms_by_class(detections)
 
     @staticmethod
-    def _is_near_worker(gear_box: List[float], worker_box: List[float]) -> bool:
-        gc = ((gear_box[0] + gear_box[2]) / 2, (gear_box[1] + gear_box[3]) / 2)
-        wc = ((worker_box[0] + worker_box[2]) / 2, (worker_box[1] + worker_box[3]) / 2)
-        w_size = max(worker_box[2] - worker_box[0], worker_box[3] - worker_box[1])
-        return np.hypot(gc[0] - wc[0], gc[1] - wc[1]) <= 1.2 * w_size
+    def _class_confidence_threshold(class_name: str, requested: float) -> float:
+        if class_name == "Person":
+            return max(requested, PERSON_CONFIDENCE_THRESHOLD)
+        if class_name in {"Hardhat", "Safety Vest", "Mask", "NO-Hardhat", "NO-Safety Vest", "NO-Mask"}:
+            return max(requested, PPE_CONFIDENCE_THRESHOLD)
+        return requested
+
+    @staticmethod
+    def _nms_by_class(detections: List[Dict]) -> List[Dict]:
+        """Apply class-aware greedy NMS while preserving distinct nearby objects."""
+        kept = []
+        for class_name in sorted({d["class_name"] for d in detections}):
+            candidates = sorted(
+                (d for d in detections if d["class_name"] == class_name),
+                key=lambda d: d["confidence"],
+                reverse=True,
+            )
+            while candidates:
+                best = candidates.pop(0)
+                kept.append(best)
+                candidates = [
+                    candidate for candidate in candidates
+                    if ConstructionDetector._box_iou(best["bbox"], candidate["bbox"]) < NMS_IOU_THRESHOLD
+                ]
+        return sorted(kept, key=lambda d: d["confidence"], reverse=True)
+
+    @staticmethod
+    def _box_iou(box_a: List[float], box_b: List[float]) -> float:
+        left, top = max(box_a[0], box_b[0]), max(box_a[1], box_b[1])
+        right, bottom = min(box_a[2], box_b[2]), min(box_a[3], box_b[3])
+        intersection = max(0.0, right - left) * max(0.0, bottom - top)
+        area_a = max(0.0, box_a[2] - box_a[0]) * max(0.0, box_a[3] - box_a[1])
+        area_b = max(0.0, box_b[2] - box_b[0]) * max(0.0, box_b[3] - box_b[1])
+        union = area_a + area_b - intersection
+        return intersection / union if union else 0.0
 
 
 

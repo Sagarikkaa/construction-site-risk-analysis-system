@@ -11,6 +11,10 @@ Run with:  streamlit run app.py
 import os
 import sys
 import json
+import html
+import base64
+import io
+import wave
 import tempfile
 import ultralytics
 import ultralytics.engine, ultralytics.nn, ultralytics.utils
@@ -49,7 +53,9 @@ from utils.visualization import (
     create_compliance_pie_chart,
     create_violations_by_type_chart,
     create_risk_distribution_chart,
+    create_safety_trend_chart,
 )
+from risk.operational_risk_model import OperationalRiskModel
 
 # ──────────────────────────────────────────────────────────────────────
 # Page configuration
@@ -143,6 +149,111 @@ st.markdown("""
         padding-bottom: 0.6rem;
         border-bottom: 2px solid rgba(99, 102, 241, 0.3);
         margin: 2rem 0 1rem 0;
+    }
+
+    .chart-heading {
+        color: #e0e7ff;
+        font-size: 1.15rem;
+        font-weight: 800;
+        margin: 0.6rem 0 0.8rem 0;
+    }
+
+    .analytics-hero {
+        padding: 0.8rem 0 1.8rem 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+        margin-bottom: 1.5rem;
+    }
+    .analytics-hero h1 {
+        color: #f8fafc;
+        font-size: 2.35rem;
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: 0;
+        margin: 0;
+    }
+    .analytics-hero p {
+        color: #a7b2c4;
+        font-size: 1rem;
+        margin: 0.55rem 0 0;
+    }
+    .analytics-section {
+        margin: 2.2rem 0 0.8rem;
+    }
+    .analytics-section h2 {
+        color: #f1f5f9;
+        font-size: 1.55rem;
+        line-height: 1.2;
+        font-weight: 800;
+        margin: 0;
+    }
+    .analytics-section p {
+        color: #94a3b8;
+        font-size: 0.92rem;
+        margin: 0.35rem 0 0;
+    }
+    .analytics-panel {
+        background: rgba(21, 27, 42, 0.72);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 12px;
+        padding: 0.9rem 1rem 0.5rem;
+        min-height: 300px;
+    }
+    .overview-card {
+        min-height: 128px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        text-align: left;
+    }
+    .overview-card .description {
+        color: #718096;
+        font-size: 0.78rem;
+        margin-top: 0.4rem;
+    }
+    .alert-table-wrap {
+        overflow-x: auto;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 12px;
+        background: rgba(21, 27, 42, 0.72);
+    }
+    .alert-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #dbe4f0;
+        font-size: 0.9rem;
+    }
+    .alert-table th {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-align: left;
+        text-transform: uppercase;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    }
+    .alert-table td {
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.09);
+        vertical-align: middle;
+    }
+    .alert-table tr:last-child td { border-bottom: 0; }
+    .risk-pill {
+        display: inline-block;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 0.25rem 0.55rem;
+        letter-spacing: 0.03em;
+    }
+    .risk-pill.low { background: rgba(34,197,94,0.16); color: #4ade80; }
+    .risk-pill.medium { background: rgba(245,158,11,0.16); color: #fbbf24; }
+    .risk-pill.high { background: rgba(249,115,22,0.16); color: #fb923c; }
+    .risk-pill.critical { background: rgba(239,68,68,0.18); color: #f87171; }
+    @media (max-width: 760px) {
+        .analytics-hero h1 { font-size: 1.85rem; }
+        .analytics-section h2 { font-size: 1.3rem; }
+        .analytics-panel { min-height: 0; padding: 0.55rem; }
     }
 
     /* Recommendation cards */
@@ -254,6 +365,12 @@ st.markdown("""
 # ──────────────────────────────────────────────────────────────────────
 # Cached model loading
 # ──────────────────────────────────────────────────────────────────────
+@st.cache_resource(show_spinner="Loading operational risk dataset...")
+def load_operational_risk_model():
+    """Load the auxiliary CSV-based operations risk dataset."""
+    return OperationalRiskModel()
+
+
 @st.cache_resource(show_spinner="Loading YOLO safety model...")
 def load_safety_agent():
     """Load the Safety Agent (Milestone 2)."""
@@ -395,7 +512,7 @@ st.markdown(f"""
 <div class="main-header">
     <h1>🏗️ Construction Risk Intelligence Platform</h1>
     <p>AI-Powered Safety Monitoring & Worker Protection</p>
-    <span class="badge">Milestone 2 — Safety Intelligence</span>
+    
 </div>
 """, unsafe_allow_html=True)
 
@@ -413,6 +530,7 @@ if not check_model_exists():
 
 safety_agent, db_manager = load_safety_agent()
 legacy_agent = load_legacy_agent()
+operational_model = load_operational_risk_model()
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -435,6 +553,47 @@ def render_metric_card(label: str, value, color: str = "#818cf8"):
     """, unsafe_allow_html=True)
 
 
+def play_alert_beep(alerts):
+    """Play one short beep for each newly displayed high-severity alert batch."""
+    urgent_alerts = [
+        alert for alert in alerts
+        if str(alert.get("risk_level", "")).upper() in {"HIGH", "CRITICAL"}
+    ]
+    if not urgent_alerts:
+        return
+
+    seen_alert_ids = st.session_state.setdefault("beeped_alert_ids", set())
+    new_alerts = [
+        alert for alert in urgent_alerts
+        if alert.get("alert_id") not in seen_alert_ids
+    ]
+    if not new_alerts:
+        return
+
+    seen_alert_ids.update(alert.get("alert_id") for alert in new_alerts)
+    sample_rate = 44100
+    duration_seconds = 0.18
+    frequency = 880
+    amplitude = 12000
+    frames = bytearray()
+    for sample_index in range(int(sample_rate * duration_seconds)):
+        value = int(amplitude * np.sin(2 * np.pi * frequency * sample_index / sample_rate))
+        frames.extend(value.to_bytes(2, byteorder="little", signed=True))
+
+    audio_buffer = io.BytesIO()
+    with wave.open(audio_buffer, "wb") as audio_file:
+        audio_file.setnchannels(1)
+        audio_file.setsampwidth(2)
+        audio_file.setframerate(sample_rate)
+        audio_file.writeframes(frames)
+
+    audio_data = base64.b64encode(audio_buffer.getvalue()).decode("ascii")
+    st.markdown(
+        f'<audio autoplay><source src="data:audio/wav;base64,{audio_data}" type="audio/wav"></audio>',
+        unsafe_allow_html=True,
+    )
+
+
 def render_detection_table(detections):
     """Show every model detection, not only worker safety results."""
     if not detections:
@@ -453,29 +612,142 @@ def render_detection_table(detections):
     st.dataframe(pd.DataFrame(detection_rows), use_container_width=True, hide_index=True)
 
 
+def render_analytics_section(title: str, subtitle: str):
+    """Render a consistent heading block for dashboard analytics sections."""
+    st.markdown(
+        f'<div class="analytics-section"><h2>{html.escape(title)}</h2>'
+        f'<p>{html.escape(subtitle)}</p></div>',
+        unsafe_allow_html=True,
+    )
+
+
+def render_ppe_compliance_card(ppe_stats):
+    """Render deployed per-PPE compliance metrics as progress bars."""
+    if not ppe_stats or not ppe_stats.get("ppe_compliance"):
+        return
+
+    st.markdown('<div class="section-header">🛡️ Safety Compliance by PPE Type</div>', unsafe_allow_html=True)
+    overall = float(ppe_stats.get("overall_ppe_compliance", 0.0))
+    st.markdown(
+        f'<div class="metric-card" style="margin-bottom: 1rem;">'
+        f'<div class="label">Overall PPE Compliance</div>'
+        f'<div class="value" style="color:#818cf8">{overall:.1f}%</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+    for category, stats in ppe_stats["ppe_compliance"].items():
+        percentage = float(stats.get("percentage", 0.0))
+        label = stats.get("label", category.replace("_", " ").title())
+        status = stats.get("status", "Low compliance")
+        width = max(0, min(100, percentage))
+        color = "#22c55e" if percentage >= 90 else ("#f59e0b" if percentage >= 75 else "#ef4444")
+        bar_width = max(4, int((width / 100) * 100))
+        st.markdown(
+            f"""
+            <div style="margin: 0.7rem 0; padding: 0.8rem 0.9rem; border-radius: 12px; background: rgba(21,27,42,0.72); border: 1px solid rgba(148,163,184,0.12);">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.45rem;">
+                    <strong style="color: #e0e7ff; font-size: 0.96rem;">{html.escape(label)}</strong>
+                    <span style="color: {color}; font-weight: 700; font-size: 0.92rem;">{percentage:.1f}%</span>
+                </div>
+                <div style="height: 12px; border-radius: 999px; background: rgba(148,163,184,0.18); overflow: hidden;">
+                    <div style="width: {width}%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, {color}, #a78bfa); transition: width 0.5s ease;"></div>
+                </div>
+                <div style="margin-top: 0.45rem; color: #94a3b8; font-size: 0.76rem;">{html.escape(status)}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+def render_recent_alerts_table(alerts):
+    """Render recent alerts as a compact table with severity badges."""
+    if not alerts:
+        st.info("No safety alerts recorded yet.")
+        return
+
+    rows = []
+    for alert in alerts[:10]:
+        risk = str(alert.get("risk_level", "LOW")).upper()
+        risk_class = risk.lower() if risk.lower() in {"low", "medium", "high", "critical"} else "low"
+        rows.append(
+            "<tr>"
+            f"<td>{html.escape(str(alert.get('timestamp', ''))[:19])}</td>"
+            f"<td>{html.escape(str(alert.get('worker_id', 'Unknown')))}</td>"
+            f"<td>{html.escape(str(alert.get('violation_type', 'Safety violation')))}</td>"
+            f'<td><span class="risk-pill {risk_class}">{html.escape(risk)}</span></td>'
+            f"<td>{float(alert.get('confidence', 0)):.0%}</td>"
+            f"<td>{html.escape(str(alert.get('status', 'New')))}</td>"
+            "</tr>"
+        )
+
+    st.markdown(
+        '<div class="alert-table-wrap"><table class="alert-table">'
+        '<thead><tr><th>Time</th><th>Worker</th><th>Violation</th>'
+        '<th>Risk Level</th><th>Confidence</th><th>Status</th></tr></thead>'
+        f'<tbody>{"".join(rows)}</tbody></table></div>',
+        unsafe_allow_html=True,
+    )
+
+
 # ======================================================================
 #  PAGE: DASHBOARD
 # ======================================================================
 if page == "🏠 Dashboard":
-    st.markdown('<div class="section-header">📊 Safety Intelligence Dashboard</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="analytics-hero"><h1>SAFETY ANALYTICS DASHBOARD</h1>'
+        '<p>Real-time insights into worker safety, PPE compliance, violations, and risk levels.</p></div>',
+        unsafe_allow_html=True,
+    )
 
     # Get analytics summary from database
     analytics = db_manager.get_analytics_summary()
+    operational_summary = operational_model.summary()
+
+    render_analytics_section("Safety Overview", "A live snapshot of tracked workers and current safety performance.")
 
     # Summary cards row
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
-        render_metric_card("Total Workers", analytics["total_workers"], "#818cf8")
+        st.markdown('<div class="metric-card overview-card"><div class="label">TOTAL WORKERS</div>'
+                    f'<div class="value" style="color:#818cf8">{analytics["total_workers"]}</div>'
+                    '<div class="description">Workers tracked by the system</div></div>', unsafe_allow_html=True)
     with col2:
-        render_metric_card("PPE Compliant", analytics["compliant_workers"], "#22c55e")
+        st.markdown('<div class="metric-card overview-card"><div class="label">PPE COMPLIANT</div>'
+                    f'<div class="value" style="color:#22c55e">{analytics["compliant_workers"]}</div>'
+                    '<div class="description">Workers meeting required PPE rules</div></div>', unsafe_allow_html=True)
     with col3:
-        render_metric_card("PPE Violations", analytics["total_violations"], "#ef4444")
+        st.markdown('<div class="metric-card overview-card"><div class="label">PPE VIOLATIONS</div>'
+                    f'<div class="value" style="color:#ef4444">{analytics["total_violations"]}</div>'
+                    '<div class="description">Recorded missing-PPE events</div></div>', unsafe_allow_html=True)
     with col4:
-        render_metric_card("Active Alerts", analytics["active_alerts"], "#f97316")
+        st.markdown('<div class="metric-card overview-card"><div class="label">ACTIVE ALERTS</div>'
+                    f'<div class="value" style="color:#f97316">{analytics["active_alerts"]}</div>'
+                    '<div class="description">Alerts awaiting resolution</div></div>', unsafe_allow_html=True)
     with col5:
         score = analytics["safety_score"]
         score_color = "#22c55e" if score >= 80 else ("#f59e0b" if score >= 50 else "#ef4444")
-        render_metric_card("Safety Score", f"{score}%", score_color)
+        st.markdown('<div class="metric-card overview-card"><div class="label">OVERALL SAFETY SCORE</div>'
+                    f'<div class="value" style="color:{score_color}">{score}%</div>'
+                    '<div class="description">Based on latest worker PPE status</div></div>', unsafe_allow_html=True)
+
+    st.markdown("")
+
+    if operational_summary["available"]:
+        st.markdown('<div class="section-header">📈 Auxiliary Project Risk Dataset</div>', unsafe_allow_html=True)
+        aux_col1, aux_col2, aux_col3 = st.columns(3)
+        with aux_col1:
+            render_metric_card("CSV Rows", operational_summary["row_count"], "#818cf8")
+        with aux_col2:
+            render_metric_card("Avg Risk", f"{operational_summary['avg_risk_score']}", "#f59e0b")
+        with aux_col3:
+            render_metric_card("Risk Level", operational_summary["risk_level"], "#ef4444" if operational_summary["risk_level"] in {"High", "Critical"} else "#22c55e")
+        st.caption(operational_summary["warning"])
+        recent_rows = operational_model.recent_rows(limit=5)
+        if recent_rows:
+            recent_df = pd.DataFrame(recent_rows)
+            recent_df = recent_df[[col for col in ["timestamp", "risk_score", "worker_count", "task_progress", "safety_incidents", "optimization_suggestion"] if col in recent_df.columns]]
+            st.dataframe(recent_df, use_container_width=True, hide_index=True)
 
     st.markdown("")
 
@@ -520,67 +792,54 @@ if page == "🏠 Dashboard":
             worker_view = worker_view[["worker_id", "ppe_status", "missing_ppe", "risk_level", "confidence"]]
             st.dataframe(worker_view, use_container_width=True, hide_index=True)
 
-        st.markdown("##### All Detected Objects")
-        render_detection_table(dashboard_report["detections"])
+            render_ppe_compliance_card(dashboard_report.get("ppe_compliance"))
 
-    # Charts row
-    st.caption(
-        "Compliance shows the latest status of tracked workers. "
-        "Risk and violation charts count stored PPE violation records."
-    )
     chart_col1, chart_col2 = st.columns(2)
     with chart_col1:
-        st.markdown("##### 1. PPE Compliance")
-        comp_fig = create_compliance_pie_chart(
-            analytics["compliant_workers"],
-            analytics["non_compliant_workers"]
-        )
-        st.pyplot(comp_fig)
+        render_analytics_section("PPE Compliance Distribution", "Current worker PPE compliance status")
+        with st.container(border=True):
+            comp_fig = create_compliance_pie_chart(
+                analytics["compliant_workers"],
+                analytics["non_compliant_workers"]
+            )
+            st.pyplot(comp_fig, use_container_width=True)
 
     with chart_col2:
-        st.markdown("##### 2. Risk Level Distribution")
-        risk_fig = create_risk_distribution_chart(analytics["risk_distribution"])
-        st.pyplot(risk_fig)
+        render_analytics_section("Risk Level Distribution", "Distribution of recorded PPE violations by risk severity")
+        with st.container(border=True):
+            risk_fig = create_risk_distribution_chart(analytics["risk_distribution"])
+            st.pyplot(risk_fig, use_container_width=True)
 
-    # Violations by type
-    if analytics["violation_types"]:
-        st.markdown("##### 3. Missing PPE by Type")
-        viol_fig = create_violations_by_type_chart(analytics["violation_types"])
-        st.pyplot(viol_fig)
+    render_analytics_section("Violations by Type", "Most frequently detected PPE violations")
+    with st.container(border=True):
+        if analytics["violation_types"]:
+            viol_fig = create_violations_by_type_chart(analytics["violation_types"])
+            st.pyplot(viol_fig, use_container_width=True)
+        else:
+            st.info("No PPE violation data available yet.")
 
-    # Recent Alerts
-    st.markdown('<div class="section-header">🚨 Recent Alerts</div>', unsafe_allow_html=True)
+    render_analytics_section("Safety Trends", "Recorded PPE violations over time")
+    with st.container(border=True):
+        trend_events = db_manager.get_recent_events(limit=100)
+        if trend_events:
+            trend_df = pd.DataFrame(trend_events)
+            trend_df["timestamp"] = pd.to_datetime(trend_df["timestamp"], errors="coerce")
+            trend_df = trend_df.dropna(subset=["timestamp"]).sort_values("timestamp")
+            if not trend_df.empty:
+                trend_fig = create_safety_trend_chart(
+                    trend_df["timestamp"].tolist(),
+                    trend_df["violations_count"].tolist(),
+                )
+                st.pyplot(trend_fig, use_container_width=True)
+            else:
+                st.info("No historical safety trend data available yet.")
+        else:
+            st.info("No historical safety trend data available yet.")
+
+    render_analytics_section("Recent Safety Alerts", "Latest alerts generated by the monitoring pipeline")
     recent_alerts = db_manager.get_alerts(limit=10)
-    if recent_alerts:
-        for alert in recent_alerts[:5]:
-            sev = alert.get("risk_level", "MEDIUM").lower()
-            st.markdown(f"""
-            <div class="alert-card {sev}">
-                <div class="alert-title">⚠️ {alert.get('violation_type', 'Safety Violation')}</div>
-                <div class="alert-meta">
-                    🕐 {alert.get('timestamp', '')[:19]} &nbsp;│&nbsp;
-                    👷 {alert.get('worker_id', 'N/A')} &nbsp;│&nbsp;
-                    📊 Confidence: {alert.get('confidence', 0):.0%} &nbsp;│&nbsp;
-                    📌 Status: {alert.get('status', 'New')} &nbsp;│&nbsp;
-                    🔴 Risk: {alert.get('risk_level', 'N/A')}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-    else:
-        st.info("No alerts generated yet. Upload an image or video to begin safety analysis.")
-
-    # Worker Safety Table
-    st.markdown('<div class="section-header">👷 Worker Safety Overview</div>', unsafe_allow_html=True)
-    workers = db_manager.get_workers(limit=20)
-    if workers:
-        worker_df = pd.DataFrame(workers)
-        display_cols = ["worker_id", "ppe_status", "missing_ppe", "risk_level", "last_seen", "violation_count"]
-        display_cols = [c for c in display_cols if c in worker_df.columns]
-        worker_df = worker_df[display_cols]
-        worker_df.columns = [c.replace("_", " ").title() for c in display_cols]
-        st.dataframe(worker_df, use_container_width=True, hide_index=True)
-    else:
-        st.info("No worker data yet. Upload an image or video to begin monitoring.")
+    play_alert_beep(recent_alerts)
+    render_recent_alerts_table(recent_alerts)
 
 
 # ======================================================================
@@ -645,6 +904,7 @@ elif page == "🛡️ Safety Monitoring":
             # Alerts generated
             if report.get("alerts"):
                 st.markdown('<div class="section-header">🚨 Alerts Generated</div>', unsafe_allow_html=True)
+                play_alert_beep(report["alerts"])
                 for alert in report["alerts"]:
                     sev = alert.get("risk_level", "MEDIUM").lower()
                     st.markdown(f"""
@@ -783,6 +1043,8 @@ elif page == "🔍 Live Detection":
                 wr_df.columns = [c.replace("_", " ").title() for c in wr_display]
                 st.dataframe(wr_df, use_container_width=True, hide_index=True)
 
+            render_ppe_compliance_card(report.get("ppe_compliance"))
+
             # Safety Recommendations
             recs = report.get("risk", {}).get("risk_factors", [])
             if recs:
@@ -911,6 +1173,7 @@ elif page == "🚨 Alerts":
 
     status_filter = None if alert_filter == "All" else alert_filter
     alerts = db_manager.get_alerts(status=status_filter, limit=100)
+    play_alert_beep(alerts)
 
     # Stats row
     all_alerts = db_manager.get_alerts(limit=500)
@@ -996,7 +1259,7 @@ elif page == "📊 Analytics":
     )
     chart_col1, chart_col2 = st.columns(2)
     with chart_col1:
-        st.markdown("##### 1. PPE Compliance")
+        st.markdown('<div class="chart-heading">1. PPE Compliance Distribution</div>', unsafe_allow_html=True)
         comp_fig = create_compliance_pie_chart(
             analytics["compliant_workers"],
             analytics["non_compliant_workers"]
@@ -1004,12 +1267,12 @@ elif page == "📊 Analytics":
         st.pyplot(comp_fig)
 
     with chart_col2:
-        st.markdown("##### 2. Risk Level Distribution")
+        st.markdown('<div class="chart-heading">2. Risk Level Distribution</div>', unsafe_allow_html=True)
         risk_fig = create_risk_distribution_chart(analytics["risk_distribution"])
         st.pyplot(risk_fig)
 
     if analytics["violation_types"]:
-        st.markdown("##### 3. Missing PPE by Type")
+        st.markdown('<div class="chart-heading">3. Violations by Type</div>', unsafe_allow_html=True)
         viol_fig = create_violations_by_type_chart(analytics["violation_types"])
         st.pyplot(viol_fig)
 

@@ -1358,5 +1358,1595 @@
     "worker_count": 3,
     "risk_score": 50,
     "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:11:18.618592",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 9,
+    "hazard_count": 2,
+    "worker_count": 3,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:11:48.102076",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 9,
+    "hazard_count": 2,
+    "worker_count": 3,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:12:10.378817",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 9,
+    "hazard_count": 2,
+    "worker_count": 3,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:26.579762",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 25,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:26.759803",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 25,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:26.935873",
+    "filename": "002551_jpg.rf.ce4b9f934161faa72c80dc6898d37b2d.jpg",
+    "analysis_type": "image",
+    "total_objects": 10,
+    "hazard_count": 3,
+    "worker_count": 3,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:27.070892",
+    "filename": "003357_jpg.rf.9867f91e88089bb68dc95947d5116d14.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 65,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:27.272942",
+    "filename": "004063_jpg.rf.1b7cdc4035bcb24ef69b8798b444053e.jpg",
+    "analysis_type": "image",
+    "total_objects": 16,
+    "hazard_count": 3,
+    "worker_count": 6,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:27.473978",
+    "filename": "004763_jpg.rf.46484e6ca73caeaa9de45822cf1085a9.jpg",
+    "analysis_type": "image",
+    "total_objects": 14,
+    "hazard_count": 3,
+    "worker_count": 3,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:27.797539",
+    "filename": "006463_jpg.rf.02f19082420ecc5537b9d59abbe6050c.jpg",
+    "analysis_type": "image",
+    "total_objects": 34,
+    "hazard_count": 9,
+    "worker_count": 9,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:27.984583",
+    "filename": "006672_jpg.rf.87d5978c486feb53177408cf00a0d87f.jpg",
+    "analysis_type": "image",
+    "total_objects": 23,
+    "hazard_count": 1,
+    "worker_count": 6,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:28.219730",
+    "filename": "0_jpg.rf.2ff49f74309118f169e07aa12564df87.jpg",
+    "analysis_type": "image",
+    "total_objects": 14,
+    "hazard_count": 4,
+    "worker_count": 6,
+    "risk_score": 59,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:28.373776",
+    "filename": "2008_008320_jpg.rf.bd34011d46f82f9410d95f00e560b8ea.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:28.611800",
+    "filename": "2008_008519_jpg.rf.1798c8eed7de04399a0e7e297b4b4c9e.jpg",
+    "analysis_type": "image",
+    "total_objects": 16,
+    "hazard_count": 6,
+    "worker_count": 7,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:28.756837",
+    "filename": "2009_000059_jpg.rf.50e8398a37eb33f33fd9f662feeea083.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:28.938731",
+    "filename": "2009_000496_jpg.rf.9a2d210fe0f5ea4b572aeb07e41ecbae.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 3,
+    "worker_count": 3,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:29.063075",
+    "filename": "3e7e40981ddd4cdb055c7ffe4c2af5d8_jpg.rf.bac50dc18195e9aeb6f3a21782a3efcb.jpg",
+    "analysis_type": "image",
+    "total_objects": 0,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:29.252293",
+    "filename": "777_jpg.rf.92dc6945342410ced7ac93f3dfbff0c5.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 81,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:29.391808",
+    "filename": "autox3_mp4-187_jpg.rf.8340e2bd65afade3fb0d3194eadc5796.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:29.519324",
+    "filename": "autox3_mp4-277_jpg.rf.a5ed8fd043fe7e1d8682768880b6d4db.jpg",
+    "analysis_type": "image",
+    "total_objects": 31,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:29.644855",
+    "filename": "autox3_mp4-65_jpg.rf.d933ce48947fa9bdb55dc702a0879ac9.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:29.787915",
+    "filename": "autox_mp4-44_jpg.rf.5048603ee6ccedf9ae6e3f787b7f82ff.jpg",
+    "analysis_type": "image",
+    "total_objects": 20,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:29.905437",
+    "filename": "bookstore_44_08_flickr_jpg.rf.244b6f308c529933af798c4063e58601.jpg",
+    "analysis_type": "image",
+    "total_objects": 0,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:30.019964",
+    "filename": "Bookstore_More_Merchandise_jpg.rf.7ab5add3e28ced74f9b316e794cc04d2.jpg",
+    "analysis_type": "image",
+    "total_objects": 0,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:30.175001",
+    "filename": "class1_150_jpg.rf.5995dce34d38deb9eb0b6e36cae78f17.jpg",
+    "analysis_type": "image",
+    "total_objects": 9,
+    "hazard_count": 1,
+    "worker_count": 2,
+    "risk_score": 69,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:30.315526",
+    "filename": "class2_131_jpg.rf.ad8314a9273471f1280ce8789ea75376.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 88,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:30.490605",
+    "filename": "class2_145_jpg.rf.b8ed5a5357ee41f8fb1aa9b01a400d51.jpg",
+    "analysis_type": "image",
+    "total_objects": 11,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:30.625136",
+    "filename": "construction-1159-_jpg.rf.9f3172102a34edb157b556a73931c831.jpg",
+    "analysis_type": "image",
+    "total_objects": 1,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:30.772193",
+    "filename": "construction-192-_jpg.rf.56dd5c4c1396c6ad01be4fbec3bca46f.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 58,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:30.892711",
+    "filename": "construction-2-_mp4-13_jpg.rf.cef0975976346515d438e0c2ce6c59db.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:31.011246",
+    "filename": "construction-2-_mp4-162_jpg.rf.efad5f15524c736fe03b9c9936adc481.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:31.130771",
+    "filename": "construction-2-_mp4-84_jpg.rf.e8d6bb0acc5c6e82c1a2d260ddf3135e.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:31.256821",
+    "filename": "construction-275-_jpg.rf.e1c57987f9dc262aad1d7c67b694fd87.jpg",
+    "analysis_type": "image",
+    "total_objects": 1,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:31.374345",
+    "filename": "construction-597-_jpg.rf.e18e918aae0aeecfdf8348513636d344.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:31.490862",
+    "filename": "construction-639-_jpg.rf.7db2168ad99f643f7e3070733387e3bb.jpg",
+    "analysis_type": "image",
+    "total_objects": 1,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:31.616399",
+    "filename": "construction-651-_jpg.rf.8fa283ce7693dbdf29eb98384f24cb85.jpg",
+    "analysis_type": "image",
+    "total_objects": 1,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:31.762469",
+    "filename": "construction-675-_jpg.rf.bb4a05441be707256175e04929da3478.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 63,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:31.898002",
+    "filename": "construction-800-_jpg.rf.a01fcddd0db9cc89c0cacf4af88c468d.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:32.020518",
+    "filename": "construction-843-_jpg.rf.c0ca85a10f6ad3c1375b37e52a51eeed.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:32.808975",
+    "filename": "Image36_jpg.rf.8704f3450f736cdd01a61dcee588f2c2.jpg",
+    "analysis_type": "image",
+    "total_objects": 57,
+    "hazard_count": 29,
+    "worker_count": 29,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:32.983594",
+    "filename": "image_53_jpg.rf.3446e366b5d4d905a32e1aedc8fe87de.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:33.126124",
+    "filename": "image_55_jpg.rf.27ae4341a9b9647d73a8929ff7a22369.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 1,
+    "worker_count": 2,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:33.266182",
+    "filename": "IMG_0871_MOV-12_jpg.rf.36858a9d51613f9a39b7855b54dfa098.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:33.406731",
+    "filename": "IMG_0871_mp4-11_jpg.rf.432092b53ebeb84f4b9b27b40343c9aa.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:33.539260",
+    "filename": "IMG_0871_mp4-23_jpg.rf.03f872b1ed87ad7fadc85e09475ad37a.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:33.697327",
+    "filename": "IMG_3100_mp4-12_jpg.rf.58849ca6a931c2cfe1b17fb4206d9d82.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:33.832861",
+    "filename": "IMG_3100_mp4-9_jpg.rf.413ccf5fe4a7ee67f71e07c2c43b6756.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:33.967921",
+    "filename": "IMG_3103_mp4-9_jpg.rf.b31bd2d816465a27aa1eb072f90bb5aa.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 74,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:34.518754",
+    "filename": "IMG_5846_jpg.rf.0b9984069116e2acd928568eb7a8e214.jpg",
+    "analysis_type": "image",
+    "total_objects": 100,
+    "hazard_count": 19,
+    "worker_count": 26,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:34.676095",
+    "filename": "Inside-merge_mov-58_jpg.rf.50147e19cb655e74c2df0047113e82b2.jpg",
+    "analysis_type": "image",
+    "total_objects": 0,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:34.791609",
+    "filename": "ka_01181_png_jpg.rf.154ee4ef254eabd62e316be50470c578.jpg",
+    "analysis_type": "image",
+    "total_objects": 8,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:34.909133",
+    "filename": "librairie_51_jpg.rf.56b0500ae2ad3820b4286133b627e59c.jpg",
+    "analysis_type": "image",
+    "total_objects": 0,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:35.039677",
+    "filename": "maksssksksss17_png_jpg.rf.f685b497756b1facbf3d4c2d2d22c0d2.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:35.208733",
+    "filename": "Movie-on-10-31-22-at-10_08-AM_mov-20_jpg.rf.aea4278b41550cdb75df5891a26052e7.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 95,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:35.394789",
+    "filename": "Movie-on-10-31-22-at-10_08-AM_mov-24_jpg.rf.c50014f3510a484e5bd565460fd0fd5c.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 55,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:35.740749",
+    "filename": "NX_img_177_jpg.rf.c03709e5fadfe2109411f05a9e9bc25f.jpg",
+    "analysis_type": "image",
+    "total_objects": 11,
+    "hazard_count": 5,
+    "worker_count": 5,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:36.088986",
+    "filename": "ppe_0018_jpg.rf.be66fabcc8627f60d963454b5a227095.jpg",
+    "analysis_type": "image",
+    "total_objects": 8,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:36.433594",
+    "filename": "ppe_1073_jpg.rf.72ea8a293a4f3e1135219e33701b1099.jpg",
+    "analysis_type": "image",
+    "total_objects": 36,
+    "hazard_count": 9,
+    "worker_count": 12,
+    "risk_score": 78,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:36.575668",
+    "filename": "RPReplay_Final1667001201_MP4-100_jpg.rf.9a1b50c4301c53b3ae534c6353337df9.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:36.886256",
+    "filename": "thumbnail-ba5c72edb320b49a69e86b05775c49b2-scaled-1_jpeg_jpg.rf.3bb460e284098219861b894fb0db13d5.jpg",
+    "analysis_type": "image",
+    "total_objects": 37,
+    "hazard_count": 12,
+    "worker_count": 12,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:37.015786",
+    "filename": "youtube-108_jpg.rf.9dc7ed5f816f07d520f3dbfaad08d40f.jpg",
+    "analysis_type": "image",
+    "total_objects": 9,
+    "hazard_count": 1,
+    "worker_count": 2,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:37.140340",
+    "filename": "youtube-114_jpg.rf.5e02b6574ace1f4b3689befbc5051cd0.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 67,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:37.287379",
+    "filename": "youtube-126_jpg.rf.786824e90daf3276130ca73ca610a8da.jpg",
+    "analysis_type": "image",
+    "total_objects": 11,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:37.481433",
+    "filename": "youtube-152_jpg.rf.9147878e3ddda845e58f7d9c041f1338.jpg",
+    "analysis_type": "image",
+    "total_objects": 19,
+    "hazard_count": 5,
+    "worker_count": 5,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:37.700509",
+    "filename": "youtube-186_jpg.rf.1f1d93447d4be3233c22c4ce9f6e0601.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:37.847044",
+    "filename": "youtube-192_jpg.rf.93bea040de8cd55f34ffb12f6ffe30b1.jpg",
+    "analysis_type": "image",
+    "total_objects": 7,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 52,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:37.964909",
+    "filename": "youtube-198_jpg.rf.e89faeb9765c6bd6cece5434d140f4af.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 7,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:38.086446",
+    "filename": "youtube-213_jpg.rf.da70b1d8cefd3cc9d56e43bb88dfb67d.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 7,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:38.223978",
+    "filename": "youtube-237_jpg.rf.d07a927721fe259757237c3706ea22e5.jpg",
+    "analysis_type": "image",
+    "total_objects": 16,
+    "hazard_count": 1,
+    "worker_count": 2,
+    "risk_score": 61,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:38.334533",
+    "filename": "youtube-253_jpg.rf.5ad0a2d701e20141940508b809584856.jpg",
+    "analysis_type": "image",
+    "total_objects": 0,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:38.460583",
+    "filename": "youtube-263_jpg.rf.374e343e12ead395440dbd81417e1be9.jpg",
+    "analysis_type": "image",
+    "total_objects": 12,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 60,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:38.574118",
+    "filename": "youtube-263_jpg.rf.bb17b89dd2ec9a090ce53b728f48865e.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:38.706653",
+    "filename": "youtube-34_jpg.rf.03eacc444bae3c5caa3fef5c736c3e40.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 25,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:38.819181",
+    "filename": "youtube-388_jpg.rf.18caa1da4f818a65f73e48463cb2270e.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:38.951241",
+    "filename": "youtube-462_jpg.rf.df73aa5089a04b8fbf3adf9d614a6740.jpg",
+    "analysis_type": "image",
+    "total_objects": 12,
+    "hazard_count": 1,
+    "worker_count": 2,
+    "risk_score": 92,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:39.074775",
+    "filename": "youtube-471_jpg.rf.4296b7bd9a5a07753077beddbcd651bf.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:39.201298",
+    "filename": "youtube-472_jpg.rf.e9425ff40c0df2beeef70abbc2324956.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:39.311822",
+    "filename": "youtube-496_jpg.rf.def4e9964e9a354d0a02f4ac14334a73.jpg",
+    "analysis_type": "image",
+    "total_objects": 0,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:39.444366",
+    "filename": "youtube-510_jpg.rf.62f82e36d134d53587edb48f291986f4.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:39.572148",
+    "filename": "youtube-53_jpg.rf.e96f8f81389f4e63a79663095680a617.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 42,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:39.696668",
+    "filename": "youtube-596_jpg.rf.11a8a4ac01d8aadb80eeb0406dfa579a.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:39.817214",
+    "filename": "youtube-631_jpg.rf.7c6ecf859c1b0a659f8ea057ad27aebd.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 8,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:39.927750",
+    "filename": "youtube-671_jpg.rf.7b08643d6754cabe6caf2b49a963de47.jpg",
+    "analysis_type": "image",
+    "total_objects": 0,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:40.045292",
+    "filename": "youtube-738_jpg.rf.6f300b76e12b325f7c373c95ef319005.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 5,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:40.164335",
+    "filename": "youtube-840_jpg.rf.974a83a7c5aee7c16e83435b043c6d96.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 67,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:55.757198",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 25,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:55.921314",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 25,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:56.091101",
+    "filename": "002551_jpg.rf.ce4b9f934161faa72c80dc6898d37b2d.jpg",
+    "analysis_type": "image",
+    "total_objects": 10,
+    "hazard_count": 3,
+    "worker_count": 3,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:56.223136",
+    "filename": "003357_jpg.rf.9867f91e88089bb68dc95947d5116d14.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 65,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:56.424144",
+    "filename": "004063_jpg.rf.1b7cdc4035bcb24ef69b8798b444053e.jpg",
+    "analysis_type": "image",
+    "total_objects": 16,
+    "hazard_count": 3,
+    "worker_count": 6,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:56.596841",
+    "filename": "004763_jpg.rf.46484e6ca73caeaa9de45822cf1085a9.jpg",
+    "analysis_type": "image",
+    "total_objects": 14,
+    "hazard_count": 3,
+    "worker_count": 3,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:56.891143",
+    "filename": "006463_jpg.rf.02f19082420ecc5537b9d59abbe6050c.jpg",
+    "analysis_type": "image",
+    "total_objects": 34,
+    "hazard_count": 9,
+    "worker_count": 9,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:57.061324",
+    "filename": "006672_jpg.rf.87d5978c486feb53177408cf00a0d87f.jpg",
+    "analysis_type": "image",
+    "total_objects": 23,
+    "hazard_count": 1,
+    "worker_count": 6,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:57.257918",
+    "filename": "0_jpg.rf.2ff49f74309118f169e07aa12564df87.jpg",
+    "analysis_type": "image",
+    "total_objects": 14,
+    "hazard_count": 4,
+    "worker_count": 6,
+    "risk_score": 59,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:57.394556",
+    "filename": "2008_008320_jpg.rf.bd34011d46f82f9410d95f00e560b8ea.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:57.596681",
+    "filename": "2008_008519_jpg.rf.1798c8eed7de04399a0e7e297b4b4c9e.jpg",
+    "analysis_type": "image",
+    "total_objects": 16,
+    "hazard_count": 6,
+    "worker_count": 7,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:57.729691",
+    "filename": "2009_000059_jpg.rf.50e8398a37eb33f33fd9f662feeea083.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:57.881161",
+    "filename": "2009_000496_jpg.rf.9a2d210fe0f5ea4b572aeb07e41ecbae.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 3,
+    "worker_count": 3,
+    "risk_score": 50,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:57.992798",
+    "filename": "3e7e40981ddd4cdb055c7ffe4c2af5d8_jpg.rf.bac50dc18195e9aeb6f3a21782a3efcb.jpg",
+    "analysis_type": "image",
+    "total_objects": 0,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:58.145848",
+    "filename": "777_jpg.rf.92dc6945342410ced7ac93f3dfbff0c5.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 81,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:58.266829",
+    "filename": "autox3_mp4-187_jpg.rf.8340e2bd65afade3fb0d3194eadc5796.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:58.387753",
+    "filename": "autox3_mp4-277_jpg.rf.a5ed8fd043fe7e1d8682768880b6d4db.jpg",
+    "analysis_type": "image",
+    "total_objects": 31,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:58.504901",
+    "filename": "autox3_mp4-65_jpg.rf.d933ce48947fa9bdb55dc702a0879ac9.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:58.622423",
+    "filename": "autox_mp4-44_jpg.rf.5048603ee6ccedf9ae6e3f787b7f82ff.jpg",
+    "analysis_type": "image",
+    "total_objects": 20,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:15:58.734349",
+    "filename": "bookstore_44_08_flickr_jpg.rf.244b6f308c529933af798c4063e58601.jpg",
+    "analysis_type": "image",
+    "total_objects": 0,
+    "hazard_count": 0,
+    "worker_count": 0,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:18:58.860115",
+    "filename": "004763_jpg.rf.46484e6ca73caeaa9de45822cf1085a9.jpg",
+    "analysis_type": "image",
+    "total_objects": 13,
+    "hazard_count": 2,
+    "worker_count": 3,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:19:47.191606",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:19:47.309143",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 19,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:20:26.534605",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:20:26.693320",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 0,
+    "worker_count": 2,
+    "risk_score": 13,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:20:26.866716",
+    "filename": "002551_jpg.rf.ce4b9f934161faa72c80dc6898d37b2d.jpg",
+    "analysis_type": "image",
+    "total_objects": 7,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 93,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:20:27.002255",
+    "filename": "003357_jpg.rf.9867f91e88089bb68dc95947d5116d14.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 62,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:20:27.231303",
+    "filename": "004063_jpg.rf.1b7cdc4035bcb24ef69b8798b444053e.jpg",
+    "analysis_type": "image",
+    "total_objects": 15,
+    "hazard_count": 4,
+    "worker_count": 6,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:20:27.919780",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:20:28.036600",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 19,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:21:23.598673",
+    "filename": "006672_jpg.rf.87d5978c486feb53177408cf00a0d87f.jpg",
+    "analysis_type": "image",
+    "total_objects": 21,
+    "hazard_count": 0,
+    "worker_count": 6,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:21:32.735681",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:21:33.026299",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 0,
+    "worker_count": 2,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:21:33.239857",
+    "filename": "002551_jpg.rf.ce4b9f934161faa72c80dc6898d37b2d.jpg",
+    "analysis_type": "image",
+    "total_objects": 7,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 58,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:21:33.380897",
+    "filename": "003357_jpg.rf.9867f91e88089bb68dc95947d5116d14.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 28,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-04T15:21:33.623957",
+    "filename": "004063_jpg.rf.1b7cdc4035bcb24ef69b8798b444053e.jpg",
+    "analysis_type": "image",
+    "total_objects": 15,
+    "hazard_count": 4,
+    "worker_count": 6,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:21:34.277556",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:21:34.383386",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 19,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:22:37.902093",
+    "filename": "006672_jpg.rf.87d5978c486feb53177408cf00a0d87f.jpg",
+    "analysis_type": "image",
+    "total_objects": 21,
+    "hazard_count": 0,
+    "worker_count": 6,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:22:48.930369",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:22:49.092056",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 0,
+    "worker_count": 2,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:22:49.258406",
+    "filename": "002551_jpg.rf.ce4b9f934161faa72c80dc6898d37b2d.jpg",
+    "analysis_type": "image",
+    "total_objects": 7,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 58,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:22:49.390635",
+    "filename": "003357_jpg.rf.9867f91e88089bb68dc95947d5116d14.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 28,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-04T15:22:49.624340",
+    "filename": "004063_jpg.rf.1b7cdc4035bcb24ef69b8798b444053e.jpg",
+    "analysis_type": "image",
+    "total_objects": 15,
+    "hazard_count": 4,
+    "worker_count": 6,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:22:50.386348",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:22:50.484485",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 19,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:24:07.688275",
+    "filename": "006672_jpg.rf.87d5978c486feb53177408cf00a0d87f.jpg",
+    "analysis_type": "image",
+    "total_objects": 21,
+    "hazard_count": 0,
+    "worker_count": 6,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:24:29.376620",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:24:29.525672",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 0,
+    "worker_count": 2,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:24:29.682722",
+    "filename": "002551_jpg.rf.ce4b9f934161faa72c80dc6898d37b2d.jpg",
+    "analysis_type": "image",
+    "total_objects": 7,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 58,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:24:29.834265",
+    "filename": "003357_jpg.rf.9867f91e88089bb68dc95947d5116d14.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 28,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-04T15:24:30.079860",
+    "filename": "004063_jpg.rf.1b7cdc4035bcb24ef69b8798b444053e.jpg",
+    "analysis_type": "image",
+    "total_objects": 15,
+    "hazard_count": 4,
+    "worker_count": 6,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:24:30.750448",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:24:30.849015",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 19,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:26:04.781869",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 31,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-04T15:32:24.618512",
+    "filename": "youtube-192_jpg.rf.93bea040de8cd55f34ffb12f6ffe30b1.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 94,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:32:54.674448",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:32:54.950161",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 1,
+    "worker_count": 2,
+    "risk_score": 25,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-04T15:32:55.250853",
+    "filename": "002551_jpg.rf.ce4b9f934161faa72c80dc6898d37b2d.jpg",
+    "analysis_type": "image",
+    "total_objects": 7,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 93,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:32:55.598218",
+    "filename": "003357_jpg.rf.9867f91e88089bb68dc95947d5116d14.jpg",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 62,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:32:56.085414",
+    "filename": "004063_jpg.rf.1b7cdc4035bcb24ef69b8798b444053e.jpg",
+    "analysis_type": "image",
+    "total_objects": 15,
+    "hazard_count": 4,
+    "worker_count": 6,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-04T15:32:57.195147",
+    "filename": "-4405-_png_jpg.rf.82b5c10b2acd1cfaa24259ada8e599fe.jpg",
+    "analysis_type": "image",
+    "total_objects": 2,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:32:57.339197",
+    "filename": "000005_jpg.rf.96e9379ccae638140c4a90fc4b700a2b.jpg",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 19,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-04T15:34:21.917556",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 66,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-04T15:37:13.270044",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 66,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-06T08:22:49.278275",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 66,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-06T08:23:09.938303",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 66,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-06T08:23:12.658500",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 66,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-06T08:26:14.727166",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 66,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-06T08:26:27.802418",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 66,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-06T08:27:17.005736",
+    "filename": "Screenshot 2026-09-03 090536.png",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 15,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-08T13:46:58.624558",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 66,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-08T13:58:22.547283",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 66,
+    "risk_level": "High"
+  },
+  {
+    "timestamp": "2026-09-08T14:13:14.724669",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 66,
+    "risk_level": "High"
   }
 ]

@@ -24,7 +24,11 @@ SAMPLE_IMAGES_DIR = os.path.join(PROJECT_ROOT, "sample_images")
 # Milestone 2 Safety Intelligence Settings
 # ---------------------------------------------------------------------------
 DEFAULT_REQUIRED_PPE = {"Hardhat", "Safety Vest"}
-DEFAULT_IOU_THRESHOLD = 0.2
+PERSON_CONFIDENCE_THRESHOLD = 0.50
+PPE_CONFIDENCE_THRESHOLD = 0.40
+NMS_IOU_THRESHOLD = 0.50
+ASSOCIATION_SCORE_THRESHOLD = 0.45
+DEFAULT_IOU_THRESHOLD = NMS_IOU_THRESHOLD
 ALERT_COOLDOWN_SECONDS = 10.0
 ALERT_SEVERITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 ALERT_STATUSES = ["New", "Acknowledged", "Resolved"]

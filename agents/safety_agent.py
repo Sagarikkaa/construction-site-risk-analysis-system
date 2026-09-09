@@ -227,6 +227,8 @@ class SafetyAgent:
         # 4. Annotate Image with Bounding Boxes & Association Visuals
         annotated_image = self._annotate_safety_image(original_image, detections, worker_results)
 
+        ppe_analytics = ppe_summary.get("ppe_compliance", {})
+
         # 5. Save to Database (SQLite Persistence)
         event_id = self.db.log_safety_event(
             timestamp=now_iso,
@@ -289,6 +291,8 @@ class SafetyAgent:
             "alerts": alerts,
             "risk": risk_report,
             "detections": detections,
+            "ppe_compliance": ppe_analytics,
+            "overall_ppe_compliance": ppe_analytics.get("overall_ppe_compliance", 0.0),
             "original_image": original_image,
             "annotated_image": annotated_image,
         }
