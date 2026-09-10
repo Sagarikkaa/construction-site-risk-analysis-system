@@ -78,8 +78,25 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
     /* Global font */
-    html, body, [class*="st-"] {
+    html, body {
         font-family: 'Inter', sans-serif;
+    }
+
+    /* Keep Streamlit's icon ligatures from being rendered as visible text. */
+    [data-testid="stIconMaterial"],
+    .material-icons,
+    .material-icons-outlined,
+    .material-symbols-rounded,
+    .material-symbols-outlined {
+        font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        line-height: 1 !important;
+        letter-spacing: normal !important;
+        text-transform: none !important;
+        white-space: nowrap !important;
+        word-wrap: normal !important;
+        direction: ltr !important;
     }
 
     /* Main header */
@@ -94,6 +111,7 @@ st.markdown("""
     .main-header h1 {
         color: #e0e7ff;
         font-size: 2rem;
+        line-height: 1.2;
         font-weight: 800;
         margin: 0;
         letter-spacing: -0.5px;
@@ -121,6 +139,7 @@ st.markdown("""
         background: linear-gradient(145deg, #1e1e2e, #252540);
         border-radius: 14px;
         padding: 1.4rem;
+        min-width: 0;
         text-align: center;
         border: 1px solid rgba(255,255,255,0.06);
         box-shadow: 0 4px 20px rgba(0,0,0,0.2);
@@ -132,21 +151,25 @@ st.markdown("""
     }
     .metric-card .value {
         font-size: 2.2rem;
+        line-height: 1.15;
         font-weight: 800;
         margin: 0.3rem 0;
     }
     .metric-card .label {
         color: #94a3b8;
         font-size: 0.85rem;
+        line-height: 1.3;
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        overflow-wrap: anywhere;
     }
 
     /* Section headers */
     .section-header {
         color: #e0e7ff;
         font-size: 1.3rem;
+        line-height: 1.3;
         font-weight: 700;
         padding-bottom: 0.6rem;
         border-bottom: 2px solid rgba(99, 102, 241, 0.3);
@@ -201,7 +224,7 @@ st.markdown("""
         min-height: 300px;
     }
     .overview-card {
-        min-height: 128px;
+        min-height: 150px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -210,7 +233,9 @@ st.markdown("""
     .overview-card .description {
         color: #718096;
         font-size: 0.78rem;
+        line-height: 1.35;
         margin-top: 0.4rem;
+        overflow-wrap: anywhere;
     }
     .alert-table-wrap {
         overflow-x: auto;

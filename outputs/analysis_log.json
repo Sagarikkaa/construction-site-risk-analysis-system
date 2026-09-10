@@ -4458,5 +4458,45 @@
     "worker_count": 1,
     "risk_score": 0,
     "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-10T19:12:14.541638",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 0,
+    "worker_count": 2,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-10T21:02:50.960969",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 0,
+    "worker_count": 2,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-10T21:03:19.609632",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 0,
+    "worker_count": 2,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-10T21:03:39.709186",
+    "filename": "Screenshot 2026-09-03 090858.png",
+    "analysis_type": "image",
+    "total_objects": 6,
+    "hazard_count": 0,
+    "worker_count": 2,
+    "risk_score": 0,
+    "risk_level": "Low"
   }
 ]
