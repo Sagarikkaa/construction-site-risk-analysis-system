@@ -15,3 +15,4 @@ data/test_*.db
 # OS generated files
 .DS_Store
 Thumbs.db
+.env
