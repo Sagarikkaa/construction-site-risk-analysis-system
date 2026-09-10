@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from agents.safety_agent import SafetyAgent
 from database.db_manager import SafetyDBManager
 from utils.config import DEFAULT_CONFIDENCE_THRESHOLD, ALERT_STATUSES
+from utils.sms_service import SMSService
 
 try:
     from fastapi import FastAPI, File, UploadFile, Query, HTTPException, Body
@@ -36,6 +37,7 @@ except ImportError:
 # Shared instances
 safety_agent = SafetyAgent()
 db_manager = SafetyDBManager()
+sms_service = SMSService(db_manager=db_manager)
 
 
 # ------------------------------------------------------------------
@@ -63,6 +65,12 @@ if HAS_FASTAPI:
         image_path: Optional[str] = None
         confidence_threshold: Optional[float] = DEFAULT_CONFIDENCE_THRESHOLD
 
+    class SendSMSRequest(BaseModel):
+        worker_id: str
+        phone_number: str
+        risk_level: str
+        message: str
+
     @app.get("/")
     def root():
         return {
@@ -75,6 +83,8 @@ if HAS_FASTAPI:
                 "/api/safety/alerts",
                 "/api/safety/analytics",
                 "/api/safety/workers",
+                "/api/safety/sms-logs",
+                "/api/safety/sms/send",
             ]
         }
 
@@ -161,6 +171,25 @@ if HAS_FASTAPI:
         workers = db_manager.get_workers(limit=limit)
         return {"count": len(workers), "workers": workers}
 
+    @app.get("/api/safety/sms-logs")
+    def get_sms_logs(limit: int = Query(50, ge=1, le=200)):
+        """Retrieve dispatched emergency SMS logs."""
+        logs = sms_service.get_recent_logs(limit=limit)
+        return {"count": len(logs), "logs": logs}
+
+    @app.post("/api/safety/sms/send")
+    def send_emergency_sms(payload: SendSMSRequest):
+        """Manually trigger or test dispatch an emergency SMS."""
+        if payload.risk_level.upper() not in ["HIGH", "CRITICAL"]:
+            raise HTTPException(status_code=400, detail="SMS emergency alerts are restricted to HIGH and CRITICAL risks.")
+        result = sms_service.send_direct_sms(
+            worker_id=payload.worker_id,
+            phone_number=payload.phone_number,
+            risk_level=payload.risk_level,
+            message=payload.message,
+        )
+        return {"status": "success", "dispatch": result}
+
 
 def _sanitize_report(report: Dict) -> Dict:
     """Remove numpy array fields before JSON serialization."""
@@ -186,6 +215,12 @@ def api_get_analytics() -> Dict:
 
 def api_get_workers(limit: int = 100) -> List[Dict]:
     return db_manager.get_workers(limit=limit)
+
+def api_get_sms_logs(limit: int = 50) -> List[Dict]:
+    return sms_service.get_recent_logs(limit=limit)
+
+def api_send_emergency_sms(worker_id: str, phone_number: str, risk_level: str, message: str) -> Dict:
+    return sms_service.send_direct_sms(worker_id, phone_number, risk_level, message)
 
 
 if __name__ == "__main__":

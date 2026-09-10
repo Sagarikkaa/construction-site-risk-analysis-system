@@ -60,9 +60,9 @@ construction risk mangement/
 │
 ├── data/
 │   ├── data.yaml                   # Dataset configuration
-│   ├── train/images/ + labels/     # 2,605 training images
-│   ├── valid/images/ + labels/     # 114 validation images
-│   └── test/images/ + labels/      # 82 test images
+│   ├── train/images/ + labels/     # 1,132 training images
+│   ├── valid/images/ + labels/     # 143 validation images
+│   └── test/images/ + labels/      # 141 test images
 │
 ├── agents/
 │   └── site_risk_agent.py          # Site Risk Agent (agentic layer)

@@ -1,0 +1,174 @@
+import json
+
+notebook = {
+    "nbformat": 4,
+    "nbformat_minor": 0,
+    "metadata": {
+        "colab": {
+            "provenance": [],
+            "gpuType": "T4"
+        },
+        "kernelspec": {
+            "name": "python3",
+            "display_name": "Python 3"
+        },
+        "accelerator": "GPU"
+    },
+    "cells": [
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "# 🚀 Construction PPE YOLOv8 Training on Google Colab (Free T4 GPU)\n",
+                "\n",
+                "This notebook trains an optimized YOLOv8 model on the Construction PPE benchmark dataset and downloads `best.pt` directly to your computer.\n",
+                "\n",
+                "**Estimated time:** ~8-10 minutes on a free T4 GPU."
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Step 1: Verify Free T4 GPU & Install Ultralytics\n",
+                "!nvidia-smi\n",
+                "!pip install -q ultralytics"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Step 2: Upload construction-ppe.ndjson (745 KB from your Downloads)\n",
+                "from google.colab import files\n",
+                "import os\n",
+                "\n",
+                "if not os.path.exists('construction-ppe.ndjson'):\n",
+                "    print('Please select construction-ppe.ndjson from your computer:')\n",
+                "    uploaded = files.upload()\n",
+                "else:\n",
+                "    print('construction-ppe.ndjson is already uploaded!')"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Step 3: Fast Download & YOLO Conversion (~10 seconds on Colab network)\n",
+                "import json, time, os, yaml, urllib.request\n",
+                "from pathlib import Path\n",
+                "from concurrent.futures import ThreadPoolExecutor\n",
+                "\n",
+                "PROJECT_CLASS_NAMES = [\n",
+                "    'Hardhat', 'Mask', 'NO-Hardhat', 'NO-Mask', 'NO-Safety Vest',\n",
+                "    'Person', 'Safety Cone', 'Safety Vest', 'machinery', 'vehicle'\n",
+                "]\n",
+                "MAP = {0: 0, 7: 2, 5: 4, 6: 5, 2: 7}\n",
+                "split_map = {'train': 'train', 'val': 'valid', 'test': 'test'}\n",
+                "\n",
+                "records = []\n",
+                "with open('construction-ppe.ndjson', 'r', encoding='utf-8') as f:\n",
+                "    for line in f:\n",
+                "        item = json.loads(line.strip())\n",
+                "        if item.get('type') == 'image':\n",
+                "            records.append(item)\n",
+                "\n",
+                "base = Path('data_ppe')\n",
+                "download_tasks = []\n",
+                "for item in records:\n",
+                "    split = split_map.get(item.get('split', 'train'), 'train')\n",
+                "    fn = item['file']\n",
+                "    img_dest = base / split / 'images' / fn\n",
+                "    lbl_dest = base / split / 'labels' / f\"{Path(fn).stem}.txt\"\n",
+                "    img_dest.parent.mkdir(parents=True, exist_ok=True)\n",
+                "    lbl_dest.parent.mkdir(parents=True, exist_ok=True)\n",
+                "    lines = []\n",
+                "    for b in item.get('annotations', {}).get('boxes', []):\n",
+                "        cid = int(b[0])\n",
+                "        if cid in MAP:\n",
+                "            lines.append(f\"{MAP[cid]} {b[1]:.6f} {b[2]:.6f} {b[3]:.6f} {b[4]:.6f}\")\n",
+                "    with open(lbl_dest, 'w') as f:\n",
+                "        f.write('\\n'.join(lines) + ('\\n' if lines else ''))\n",
+                "    download_tasks.append((item['url'], img_dest))\n",
+                "\n",
+                "def dl(t):\n",
+                "    u, d = t\n",
+                "    if not d.exists() or d.stat().st_size == 0:\n",
+                "        try:\n",
+                "            req = urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0'})\n",
+                "            with urllib.request.urlopen(req, timeout=15) as r:\n",
+                "                with open(d, 'wb') as fp:\n",
+                "                    fp.write(r.read())\n",
+                "        except Exception:\n",
+                "            pass\n",
+                "\n",
+                "print(f'Downloading {len(download_tasks)} images with 32 worker threads...')\n",
+                "with ThreadPoolExecutor(32) as ex:\n",
+                "    list(ex.map(dl, download_tasks))\n",
+                "\n",
+                "yaml_cfg = {\n",
+                "    'path': str(base.resolve()),\n",
+                "    'train': 'train/images',\n",
+                "    'val': 'valid/images',\n",
+                "    'test': 'test/images',\n",
+                "    'nc': len(PROJECT_CLASS_NAMES),\n",
+                "    'names': PROJECT_CLASS_NAMES\n",
+                "}\n",
+                "with open('data_ppe/data.yaml', 'w') as f:\n",
+                "    yaml.dump(yaml_cfg, f, sort_keys=False)\n",
+                "print('✅ Dataset prepared successfully for YOLO!')"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Step 4: Train YOLOv8 on T4 GPU (~8-10 mins)\n",
+                "from ultralytics import YOLO\n",
+                "\n",
+                "model = YOLO('yolov8s.pt')  # YOLOv8 small: optimal balance of speed & mAP\n",
+                "results = model.train(\n",
+                "    data='data_ppe/data.yaml',\n",
+                "    epochs=50,\n",
+                "    imgsz=640,\n",
+                "    batch=16,\n",
+                "    device=0,\n",
+                "    project='runs',\n",
+                "    name='ppe_model',\n",
+                "    exist_ok=True\n",
+                ")"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Step 5: Automatically download best.pt\n",
+                "from google.colab import files\n",
+                "import os\n",
+                "\n",
+                "best_weights = 'runs/ppe_model/weights/best.pt'\n",
+                "if os.path.exists(best_weights):\n",
+                "    print('✅ Training complete! Downloading best.pt...')\n",
+                "    files.download(best_weights)\n",
+                "else:\n",
+                "    print('⚠️ Weights not found at:', best_weights)"
+            ]
+        }
+    ]
+}
+
+with open("train_ppe_colab.ipynb", "w", encoding="utf-8") as f:
+    json.dump(notebook, f, indent=2)
+
+print("Created train_ppe_colab.ipynb successfully!")

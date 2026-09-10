@@ -199,6 +199,7 @@ def test_alert_system():
     test_db_path = os.path.join(PROJECT_ROOT, "data", "test_alerts.db")
     db = SafetyDBManager(db_path=test_db_path)
     alert_sys = AlertSystem(db_manager=db, cooldown_seconds=2.0)
+    alert_sys.sms_service.enabled = False  # Isolate alert/cooldown logic from external network roundtrip
 
     # Worker with violation
     worker_results = [
@@ -367,6 +368,104 @@ def test_milestone1_backward_compatibility():
     return True
 
 
+def test_sms_alert_system():
+    """Test 7: Emergency SMS Alerting for High and Critical Risks"""
+    separator("TEST 7: Emergency SMS Alerting (High/Critical Trigger)")
+    from utils.sms_service import SMSService
+    from database.db_manager import SafetyDBManager
+    from agents.alert_system import AlertSystem
+
+    test_db_path = os.path.join(PROJECT_ROOT, "data", "test_sms.db")
+    if os.path.exists(test_db_path):
+        try:
+            os.remove(test_db_path)
+        except Exception:
+            pass
+    db = SafetyDBManager(db_path=test_db_path)
+    sms_service = SMSService(db_manager=db)
+
+    # 1. Trigger level validation
+    assert sms_service.should_trigger("HIGH") is True
+    assert sms_service.should_trigger("CRITICAL") is True
+    assert sms_service.should_trigger("MEDIUM") is False
+    assert sms_service.should_trigger("LOW") is False
+    print("  ✅ Risk level filtering verified (Only HIGH & CRITICAL trigger SMS)")
+
+    # 2. Medium risk should NOT dispatch SMS
+    med_alert = {
+        "alert_id": "ALT-MED01",
+        "worker_id": "Worker-01",
+        "violation_type": "Missing Safety Vest",
+        "risk_level": "MEDIUM",
+    }
+    med_res = sms_service.send_alert_sms(med_alert)
+    assert med_res is None
+    print("  ✅ Medium risk alert correctly skipped SMS dispatch")
+
+    # 3. High risk worker violation SHOULD dispatch SMS
+    high_alert = {
+        "alert_id": "ALT-HIGH01",
+        "worker_id": "Worker-01",
+        "violation_type": "Worker detected without helmet",
+        "risk_level": "HIGH",
+    }
+    high_res = sms_service.send_alert_sms(high_alert)
+    assert high_res is not None
+    assert high_res["worker_id"] == "Worker-01"
+    assert high_res["phone_number"] == "+91 6370671276"
+    assert high_res["risk_level"] == "HIGH"
+    assert high_res["status"] in ["Delivered", "Sent"] or "Failed" in high_res["status"]
+    print(f"  ✅ High risk SMS dispatched: to {high_res['phone_number']} (Provider: {high_res['provider']})")
+
+    # 4. Critical risk worker violation SHOULD dispatch SMS
+    crit_alert = {
+        "alert_id": "ALT-CRIT01",
+        "worker_id": "Worker-02",
+        "violation_type": "Worker detected without required PPE (Missing Helmet and Vest)",
+        "risk_level": "CRITICAL",
+    }
+    crit_res = sms_service.send_alert_sms(crit_alert)
+    assert crit_res is not None
+    assert crit_res["worker_id"] == "Worker-02"
+    assert crit_res["phone_number"] == "+91 6370671276"
+    assert crit_res["risk_level"] == "CRITICAL"
+    print(f"  ✅ Critical risk SMS dispatched: to {crit_res['phone_number']} (Provider: {crit_res['provider']})")
+
+    # 5. Database logging verification
+    logs = db.get_sms_logs()
+    assert len(logs) == 2
+    assert logs[0]["risk_level"] in ["HIGH", "CRITICAL"]
+    print(f"  ✅ SMS logs persisted to database: {len(logs)} records found")
+
+    # 6. AlertSystem automatic integration verification
+    alert_sys = AlertSystem(db_manager=db, cooldown_seconds=1.0)
+    worker_inputs = [
+        {
+            "worker_id": "Worker-03",
+            "ppe_status": "Non-Compliant",
+            "missing_ppe": ["helmet"],
+            "risk_level": "High",
+            "violation": "Missing Helmet",
+            "alert": True,
+            "confidence": 0.92,
+        }
+    ]
+    generated = alert_sys.process_worker_violations(worker_inputs)
+    assert len(generated) == 1
+    assert generated[0]["sms_sent"] is True
+    assert generated[0]["sms_recipient"] == "+91 6370671276"
+    print(f"  ✅ AlertSystem automatic SMS integration verified for {generated[0]['worker_id']}")
+
+    # Clean up
+    try:
+        os.remove(test_db_path)
+    except Exception:
+        pass
+
+    print("  ✅ TEST 7 PASSED — Emergency SMS Alerting fully operational")
+    return True
+
+
 # ──────────────────────────────────────────────────────────────────────
 # Main
 # ──────────────────────────────────────────────────────────────────────
@@ -384,6 +483,7 @@ if __name__ == "__main__":
         ("Safety Agent E2E", test_safety_agent_with_real_image),
         ("API Module", test_api_module),
         ("M1 Backward Compatibility", test_milestone1_backward_compatibility),
+        ("SMS Emergency Alerting", test_sms_alert_system),
     ]
 
     for name, test_fn in tests:

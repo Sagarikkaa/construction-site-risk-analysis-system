@@ -8,11 +8,13 @@
 # real-world safety standards.
 
 import os
+from dotenv import load_dotenv
 
 # ---------------------------------------------------------------------------
 # Paths (all relative to the project root)
 # ---------------------------------------------------------------------------
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 MODEL_PATH = os.path.join(PROJECT_ROOT, "models", "best.pt")
 DATA_YAML_PATH = os.path.join(PROJECT_ROOT, "data", "data.yaml")
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "outputs")
@@ -32,6 +34,11 @@ DEFAULT_IOU_THRESHOLD = NMS_IOU_THRESHOLD
 ALERT_COOLDOWN_SECONDS = 10.0
 ALERT_SEVERITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 ALERT_STATUSES = ["New", "Acknowledged", "Resolved"]
+
+# Fail-safe PPE enforcement: When True, any detected worker lacking positive PPE
+# (e.g. Hardhat or Safety Vest) on their body region is classified as Non-Compliant
+# rather than Uncertain.
+FAIL_SAFE_PPE_ENFORCEMENT = True
 
 
 # ---------------------------------------------------------------------------
@@ -139,3 +146,23 @@ RECOMMENDATIONS = {
 
 # Fallback when no hazards are found
 NO_HAZARD_MESSAGE = "✅ No significant hazards detected in the analysed frame."
+
+# ---------------------------------------------------------------------------
+# SMS Alert & Emergency Dispatch Settings
+# ---------------------------------------------------------------------------
+SMS_ENABLED = True
+SMS_TRIGGER_LEVELS = {"HIGH", "CRITICAL"}
+DEFAULT_SUPERVISOR_PHONE = "+91 6370671276"
+DEFAULT_WORKER_PHONES = {
+    "Worker-01": "+91 6370671276",
+    "Worker-02": "+91 6370671276",
+    "Worker-03": "+91 6370671276",
+    "Worker-04": "+91 6370671276",
+    "Worker-05": "+91 6370671276",
+    "Worker-06": "+91 6370671276",
+    "Worker-07": "+91 6370671276",
+}
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
+TWILIO_FROM_NUMBER = os.getenv("TWILIO_FROM_NUMBER", "")
+

@@ -240,7 +240,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output",
         type=str,
-        default=str(PROJECT_ROOT / "data" / "ultralytics_ppe"),
+        default=str(PROJECT_ROOT / "data"),
         help="Output directory",
     )
     parser.add_argument(

@@ -93,6 +93,21 @@ class SafetyDBManager:
                     violation_count INTEGER DEFAULT 0
                 )
             """)
+
+            # SMS Alerts table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS sms_alerts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT NOT NULL,
+                    alert_id TEXT,
+                    worker_id TEXT,
+                    phone_number TEXT,
+                    risk_level TEXT,
+                    message TEXT,
+                    status TEXT,
+                    provider TEXT
+                )
+            """)
             conn.commit()
 
     # ------------------------------------------------------------------
@@ -365,3 +380,37 @@ class SafetyDBManager:
                 "violation_types": violation_types,
                 "risk_distribution": risk_distribution,
             }
+
+    # ------------------------------------------------------------------
+    # SMS Alert Logging
+    # ------------------------------------------------------------------
+    def log_sms_alert(
+        self,
+        alert_id: str,
+        worker_id: str,
+        phone_number: str,
+        risk_level: str,
+        message: str,
+        status: str = "Delivered",
+        provider: str = "Local Dispatcher",
+    ) -> int:
+        now_iso = datetime.now().isoformat()
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO sms_alerts (timestamp, alert_id, worker_id, phone_number, risk_level, message, status, provider)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (now_iso, alert_id, worker_id, phone_number, risk_level, message, status, provider)
+            )
+            conn.commit()
+            return cursor.lastrowid
+
+    def get_sms_logs(self, limit: int = 50) -> List[Dict]:
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM sms_alerts ORDER BY id DESC LIMIT ?", (limit,))
+            rows = cursor.fetchall()
+            return [dict(r) for r in rows]
+

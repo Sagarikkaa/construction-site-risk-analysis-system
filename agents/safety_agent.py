@@ -204,16 +204,22 @@ class SafetyAgent:
     ) -> Dict:
         now_iso = datetime.now().isoformat()
 
-        # 1. PPE Compliance & Spatial Worker Association
-        ppe_summary = self.ppe_engine.evaluate_compliance(detections)
+        # 1. PPE Compliance & Spatial Worker Association (with color verification)
+        ppe_summary = self.ppe_engine.evaluate_compliance(detections, image=original_image)
         worker_results = ppe_summary["worker_results"]
+        sanitized_detections = ppe_summary.get("sanitized_detections", detections)
 
         # 2. Risk Score & Level
-        risk_report = self.scorer.calculate_risk(detections)
+        risk_report = self.scorer.calculate_risk(sanitized_detections)
         risk_report = self._merge_worker_risk(risk_report, worker_results)
 
-        # 3. Alert Generation with Cooldown
+        # 3. Alert Generation with Cooldown & Automated SMS Dispatch
         alerts = self.alert_system.process_worker_violations(worker_results)
+        if risk_report.get("level", "").upper() in ["HIGH", "CRITICAL"]:
+            if not any(a.get("risk_level") in ["HIGH", "CRITICAL"] for a in alerts):
+                site_alert = self.alert_system.process_site_risk(risk_report, source=filename)
+                if site_alert:
+                    alerts.append(site_alert)
 
         # Determine primary violation description
         if ppe_summary["violations_count"] > 0:
@@ -225,7 +231,7 @@ class SafetyAgent:
             primary_violation = "None"
 
         # 4. Annotate Image with Bounding Boxes & Association Visuals
-        annotated_image = self._annotate_safety_image(original_image, detections, worker_results)
+        annotated_image = self._annotate_safety_image(original_image, sanitized_detections, worker_results)
 
         ppe_analytics = ppe_summary.get("ppe_compliance", {})
 
@@ -298,25 +304,43 @@ class SafetyAgent:
         }
 
     def _merge_worker_risk(self, risk_report: Dict, worker_results: List[Dict]) -> Dict:
-        """Ensure the site risk reflects explainable worker PPE violations."""
+        """
+        Ensure the site risk reflects explainable worker PPE violations proportionally.
+        A single isolated violation in a large, mostly-compliant team scales proportionally
+        rather than spiking the entire site into Critical/High alert.
+        """
+        if not worker_results:
+            return risk_report
+
         level_scores = {level["label"]: level["min"] for level in RISK_LEVELS}
-        worker_minimum = max(
-            (level_scores.get(worker["risk_level"], 0) for worker in worker_results),
-            default=0,
-        )
-        if worker_minimum <= risk_report["score"]:
+        worker_levels = [level_scores.get(worker["risk_level"], 0) for worker in worker_results]
+        max_worker_severity = max(worker_levels, default=0)
+
+        total_workers = len(worker_results)
+        non_compliant = sum(1 for w in worker_results if w["ppe_status"] != "Compliant")
+        violation_ratio = non_compliant / total_workers
+
+        if total_workers <= 1:
+            scaled_worker_score = max_worker_severity
+        else:
+            # Scale proportionally: base penalty + violation ratio
+            scaled_worker_score = int(max_worker_severity * min(1.0, 0.35 + 0.65 * violation_ratio))
+
+        final_score = max(risk_report["score"], scaled_worker_score)
+        if final_score <= risk_report["score"] and risk_report["score"] > 0:
             return risk_report
 
         promoted = dict(risk_report)
-        promoted["score"] = worker_minimum
-        level = self.scorer._get_level(worker_minimum)
+        promoted["score"] = final_score
+        level = self.scorer._get_level(final_score)
         promoted["level"] = level["label"]
         promoted["level_color"] = level["color"]
         promoted["level_emoji"] = level["emoji"]
-        promoted["risk_explanation"] = (
-            f"{level['label']} Risk — worker PPE compliance rules identified "
-            "a missing required PPE item."
-        )
+        if non_compliant > 0:
+            promoted["risk_explanation"] = (
+                f"{level['label']} Risk — {non_compliant} of {total_workers} worker(s) "
+                f"({int((1 - violation_ratio) * 100)}% compliance) with PPE alerts."
+            )
         return promoted
 
     # ------------------------------------------------------------------

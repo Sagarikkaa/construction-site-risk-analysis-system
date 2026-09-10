@@ -44,7 +44,11 @@ from utils.config import (
     HAZARD_WEIGHTS, PROXIMITY_WEIGHTS,
     DEFAULT_REQUIRED_PPE, DEFAULT_IOU_THRESHOLD,
     ALERT_COOLDOWN_SECONDS,
+    SMS_ENABLED, SMS_TRIGGER_LEVELS,
+    DEFAULT_SUPERVISOR_PHONE, DEFAULT_WORKER_PHONES,
+    TWILIO_ACCOUNT_SID, TWILIO_FROM_NUMBER,
 )
+from utils.sms_service import SMSService
 from utils.visualization import (
     create_risk_gauge,
     create_hazard_chart,
@@ -55,7 +59,6 @@ from utils.visualization import (
     create_risk_distribution_chart,
     create_safety_trend_chart,
 )
-from risk.operational_risk_model import OperationalRiskModel
 
 # ──────────────────────────────────────────────────────────────────────
 # Page configuration
@@ -365,11 +368,6 @@ st.markdown("""
 # ──────────────────────────────────────────────────────────────────────
 # Cached model loading
 # ──────────────────────────────────────────────────────────────────────
-@st.cache_resource(show_spinner="Loading operational risk dataset...")
-def load_operational_risk_model():
-    """Load the auxiliary CSV-based operations risk dataset."""
-    return OperationalRiskModel()
-
 
 @st.cache_resource(show_spinner="Loading YOLO safety model...")
 def load_safety_agent():
@@ -530,7 +528,6 @@ if not check_model_exists():
 
 safety_agent, db_manager = load_safety_agent()
 legacy_agent = load_legacy_agent()
-operational_model = load_operational_risk_model()
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -702,7 +699,6 @@ if page == "🏠 Dashboard":
 
     # Get analytics summary from database
     analytics = db_manager.get_analytics_summary()
-    operational_summary = operational_model.summary()
 
     render_analytics_section("Safety Overview", "A live snapshot of tracked workers and current safety performance.")
 
@@ -732,22 +728,6 @@ if page == "🏠 Dashboard":
                     '<div class="description">Based on latest worker PPE status</div></div>', unsafe_allow_html=True)
 
     st.markdown("")
-
-    if operational_summary["available"]:
-        st.markdown('<div class="section-header">📈 Auxiliary Project Risk Dataset</div>', unsafe_allow_html=True)
-        aux_col1, aux_col2, aux_col3 = st.columns(3)
-        with aux_col1:
-            render_metric_card("CSV Rows", operational_summary["row_count"], "#818cf8")
-        with aux_col2:
-            render_metric_card("Avg Risk", f"{operational_summary['avg_risk_score']}", "#f59e0b")
-        with aux_col3:
-            render_metric_card("Risk Level", operational_summary["risk_level"], "#ef4444" if operational_summary["risk_level"] in {"High", "Critical"} else "#22c55e")
-        st.caption(operational_summary["warning"])
-        recent_rows = operational_model.recent_rows(limit=5)
-        if recent_rows:
-            recent_df = pd.DataFrame(recent_rows)
-            recent_df = recent_df[[col for col in ["timestamp", "risk_score", "worker_count", "task_progress", "safety_incidents", "optimization_suggestion"] if col in recent_df.columns]]
-            st.dataframe(recent_df, use_container_width=True, hide_index=True)
 
     st.markdown("")
 
@@ -1176,12 +1156,15 @@ elif page == "🚨 Alerts":
     play_alert_beep(alerts)
 
     # Stats row
+    # Stats row
     all_alerts = db_manager.get_alerts(limit=500)
+    sms_logs = db_manager.get_sms_logs(limit=100)
     new_count = sum(1 for a in all_alerts if a.get("status") == "New")
     ack_count = sum(1 for a in all_alerts if a.get("status") == "Acknowledged")
     resolved_count = sum(1 for a in all_alerts if a.get("status") == "Resolved")
+    sms_count = len(sms_logs)
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         render_metric_card("Total Alerts", len(all_alerts), "#818cf8")
     with col2:
@@ -1190,6 +1173,8 @@ elif page == "🚨 Alerts":
         render_metric_card("Acknowledged", ack_count, "#f59e0b")
     with col4:
         render_metric_card("Resolved", resolved_count, "#22c55e")
+    with col5:
+        render_metric_card("SMS Dispatched", sms_count, "#38bdf8")
 
     st.markdown("")
 
@@ -1197,6 +1182,18 @@ elif page == "🚨 Alerts":
         for alert in alerts:
             sev = alert.get("risk_level", "MEDIUM").lower()
             alert_id = alert.get("alert_id", "N/A")
+            is_urgent = alert.get("risk_level", "").upper() in ["HIGH", "CRITICAL"]
+
+            sms_badge_html = ""
+            if is_urgent:
+                recipient = DEFAULT_WORKER_PHONES.get(alert.get("worker_id"), DEFAULT_SUPERVISOR_PHONE)
+                sms_badge_html = f"""
+                <div style="margin-top: 8px;">
+                    <span style="background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.4); padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">
+                        📱 Emergency SMS Sent to {alert.get('worker_id', 'Worker')} ({recipient})
+                    </span>
+                </div>
+                """
 
             st.markdown(f"""
             <div class="alert-card {sev}">
@@ -1208,6 +1205,7 @@ elif page == "🚨 Alerts":
                     📊 Confidence: {alert.get('confidence', 0):.0%} &nbsp;│&nbsp;
                     📌 Status: <b>{alert.get('status', 'New')}</b>
                 </div>
+                {sms_badge_html}
             </div>
             """, unsafe_allow_html=True)
 
@@ -1226,6 +1224,48 @@ elif page == "🚨 Alerts":
             st.markdown("---")
     else:
         st.info("No alerts found for the selected filter. Upload an image to generate safety alerts.")
+
+    # Emergency SMS Dispatch Logs & Manual Testing Section
+    st.markdown('<div class="section-header">📱 Emergency SMS Dispatch Log & Live Testing</div>', unsafe_allow_html=True)
+    with st.expander("View Dispatched SMS Records", expanded=True):
+        if sms_logs:
+            sms_df = pd.DataFrame(sms_logs)
+            display_cols = ["timestamp", "alert_id", "worker_id", "phone_number", "risk_level", "message", "status", "provider"]
+            display_cols = [c for c in display_cols if c in sms_df.columns]
+            sms_df = sms_df[display_cols]
+            sms_df.columns = [c.replace("_", " ").title() for c in display_cols]
+            st.dataframe(sms_df, use_container_width=True, hide_index=True)
+        else:
+            st.caption("No SMS messages dispatched yet. High and Critical risk violations will automatically send SMS alerts.")
+
+    with st.expander("🧪 Test Manual SMS Dispatch"):
+        st.caption("Dispatch an instant emergency SMS to a worker or supervisor line to verify live alert routing.")
+        tcol1, tcol2, tcol3 = st.columns([1, 1, 1])
+        with tcol1:
+            target_worker = st.selectbox("Worker / Recipient", list(DEFAULT_WORKER_PHONES.keys()) + ["Supervisor"])
+        with tcol2:
+            target_risk = st.selectbox("Risk Level", ["HIGH", "CRITICAL", "MEDIUM", "LOW"])
+        with tcol3:
+            target_phone = DEFAULT_WORKER_PHONES.get(target_worker, DEFAULT_SUPERVISOR_PHONE)
+            phone_input = st.text_input("Recipient Phone", value=target_phone)
+
+        test_msg = st.text_input(
+            "Alert Message",
+            value=f"🚨 Immediate safety corrective action required: Missing protective equipment reported.",
+        )
+        if st.button("🚀 Dispatch Test SMS"):
+            sms_srv = SMSService(db_manager=db_manager)
+            if target_risk in ["HIGH", "CRITICAL"]:
+                res = sms_srv.send_direct_sms(
+                    worker_id=target_worker,
+                    phone_number=phone_input,
+                    risk_level=target_risk,
+                    message=test_msg,
+                )
+                st.success(f"✅ SMS successfully routed via {res['provider']} to {phone_input} (Status: {res['status']})")
+                st.rerun()
+            else:
+                st.warning(f"ℹ️ SMS skipped: Risk level is {target_risk}. SMS alerts are automatically restricted to HIGH and CRITICAL risks.")
 
 
 # ======================================================================
@@ -1432,10 +1472,54 @@ elif page == "⚙️ Configuration":
     st.info("💡 Start the REST API server with: `python api/server.py`")
 
     st.markdown("---")
+    st.markdown("##### 📱 SMS Emergency Dispatch Settings")
+    st.markdown("Automated SMS notification parameters for worker and supervisor alerting.")
+
+    sms_c1, sms_c2 = st.columns(2)
+    with sms_c1:
+        st.markdown(f"""
+        | Parameter | Value |
+        |-----------|-------|
+        | **SMS Alerting Active** | `{'Enabled' if SMS_ENABLED else 'Disabled'}` |
+        | **Trigger Risk Levels** | `HIGH` & `CRITICAL` only |
+        | **Supervisor Line** | `{DEFAULT_SUPERVISOR_PHONE}` |
+        | **Gateway Provider** | `{'Twilio REST' if TWILIO_ACCOUNT_SID else 'Local Dispatcher (Simulator)'}` |
+        """)
+
+    with sms_c2:
+        st.markdown("###### Registered Worker Phone Directory")
+        for wid, phone in DEFAULT_WORKER_PHONES.items():
+            st.caption(f"👷 **{wid}**: `{phone}`")
+
+    with st.expander("🔑 Configure Twilio SMS Credentials", expanded=not bool(os.getenv("TWILIO_ACCOUNT_SID"))):
+        st.markdown("""
+        To receive real cellular SMS on your mobile phone (**`+91 6370671276`**):
+        1. Open your [Twilio Console](https://console.twilio.com).
+        2. Copy your **Account SID**, **Auth Token**, and **Twilio Phone Number**.
+        3. Save below to transmit live messages to your phone carrier.
+        """)
+        tw_sid_input = st.text_input("Twilio Account SID", value=os.getenv("TWILIO_ACCOUNT_SID", ""), type="password")
+        tw_token_input = st.text_input("Twilio Auth Token", value=os.getenv("TWILIO_AUTH_TOKEN", ""), type="password")
+        tw_from_input = st.text_input("Twilio Phone Number (Sender)", value=os.getenv("TWILIO_FROM_NUMBER", ""), placeholder="+1234567890")
+
+        if st.button("💾 Save Twilio Credentials"):
+            env_path = os.path.join(PROJECT_ROOT, ".env")
+            with open(env_path, "w", encoding="utf-8") as f:
+                f.write(f"TWILIO_ACCOUNT_SID={tw_sid_input.strip()}\n")
+                f.write(f"TWILIO_AUTH_TOKEN={tw_token_input.strip()}\n")
+                f.write(f"TWILIO_FROM_NUMBER={tw_from_input.strip()}\n")
+            os.environ["TWILIO_ACCOUNT_SID"] = tw_sid_input.strip()
+            os.environ["TWILIO_AUTH_TOKEN"] = tw_token_input.strip()
+            os.environ["TWILIO_FROM_NUMBER"] = tw_from_input.strip()
+            st.success("✅ Twilio credentials saved! Real SMS dispatch is now activated.")
+            st.rerun()
+
+    st.markdown("---")
     st.markdown("##### Database Information")
     from utils.config import DB_PATH
     st.markdown(f"**Database Path:** `{DB_PATH}`")
     analytics = db_manager.get_analytics_summary()
+    sms_logs_count = len(db_manager.get_sms_logs(limit=1000))
     st.markdown(f"""
     | Table | Records |
     |-------|---------|
@@ -1443,6 +1527,7 @@ elif page == "⚙️ Configuration":
     | PPE Violations | {analytics['total_violations']} |
     | Alerts | {analytics['total_alerts']} |
     | Workers | {analytics['total_workers']} |
+    | SMS Alerts | {sms_logs_count} |
     """)
 
     st.markdown("""

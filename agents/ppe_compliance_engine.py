@@ -6,9 +6,14 @@ spatial relationships and evaluates individual worker PPE compliance.
 """
 
 import math
+import cv2
 import numpy as np
 from typing import List, Dict, Set, Tuple, Optional
 from utils.config import ASSOCIATION_SCORE_THRESHOLD
+try:
+    from utils.config import FAIL_SAFE_PPE_ENFORCEMENT
+except ImportError:
+    FAIL_SAFE_PPE_ENFORCEMENT = True
 
 
 class PPEComplianceEngine:
@@ -56,6 +61,7 @@ class PPEComplianceEngine:
         required_ppe: Optional[Set[str]] = None,
         distance_threshold_ratio: float = 0.8,
         available_classes: Optional[Set[str]] = None,
+        fail_safe: Optional[bool] = None,
     ):
         """
         Parameters
@@ -64,6 +70,12 @@ class PPEComplianceEngine:
             Set of required PPE item names (e.g. {"Hardhat", "Safety Vest"}).
         distance_threshold_ratio : float
             Multiplier relative to worker box size to associate gear with worker.
+        available_classes : set of str, optional
+            Set of classes supported by the model.
+        fail_safe : bool, optional
+            If True, workers detected without required PPE in their body region
+            are treated as Non-Compliant rather than Uncertain. Defaults to
+            FAIL_SAFE_PPE_ENFORCEMENT from config.
         """
         default_required = {"Hardhat", "Safety Vest"}
         if available_classes is not None:
@@ -76,10 +88,13 @@ class PPEComplianceEngine:
         )
         self.distance_threshold_ratio = distance_threshold_ratio
         self.available_classes = set(available_classes) if available_classes is not None else None
+        self.fail_safe = fail_safe if fail_safe is not None else FAIL_SAFE_PPE_ENFORCEMENT
 
-    def evaluate_compliance(self, detections: List[Dict]) -> Dict:
+    def evaluate_compliance(self, detections: List[Dict], image: Optional[np.ndarray] = None) -> Dict:
         """
         Process detections and return worker-to-PPE association and compliance results.
+        Includes spatial disambiguation for overlapping workers and color-based verification
+        for safety vests and masks.
 
         Returns
         -------
@@ -88,6 +103,7 @@ class PPEComplianceEngine:
             compliant_workers: int
             violations_count: int
             worker_results: list of worker compliance dicts
+            sanitized_detections: list of detections with suppressed false hazards
         """
         if not detections:
             return {
@@ -95,6 +111,7 @@ class PPEComplianceEngine:
                 "compliant_workers": 0,
                 "violations_count": 0,
                 "worker_results": [],
+                "sanitized_detections": [],
             }
 
         worker_classes = {"Person"}
@@ -110,6 +127,30 @@ class PPEComplianceEngine:
         # synthetic worker because that produces false worker counts.
         workers = [d for d in detections if d["class_name"] in worker_classes]
         gear_items = [d for d in detections if d["class_name"] in gear_classes]
+
+        # Multi-worker separation: If multiple hardhats exist inside a single worker box, separate workers
+        hardhat_boxes = [d for d in gear_items if d["class_name"] in {"Hardhat", "NO-Hardhat"}]
+        refined_workers = []
+        for w in workers:
+            w_box = w["bbox"]
+            w_w = max(1.0, w_box[2] - w_box[0])
+            contained_hats = [
+                h for h in hardhat_boxes
+                if (w_box[0] - 0.10 * w_w) <= (h["bbox"][0] + h["bbox"][2]) / 2 <= (w_box[2] + 0.10 * w_w)
+                and (w_box[1] - 0.25 * (w_box[3] - w_box[1])) <= (h["bbox"][1] + h["bbox"][3]) / 2 <= (w_box[1] + 0.50 * (w_box[3] - w_box[1]))
+            ]
+            if len(contained_hats) >= 2:
+                contained_hats.sort(key=lambda h: (h["bbox"][0] + h["bbox"][2]) / 2)
+                h1_cx = (contained_hats[0]["bbox"][0] + contained_hats[0]["bbox"][2]) / 2
+                h2_cx = (contained_hats[-1]["bbox"][0] + contained_hats[-1]["bbox"][2]) / 2
+                if (h2_cx - h1_cx) >= 0.15 * w_w:
+                    mid_x = (h1_cx + h2_cx) / 2
+                    w1 = dict(w, bbox=[w_box[0], w_box[1], mid_x, w_box[3]])
+                    w2 = dict(w, bbox=[mid_x, w_box[1], w_box[2], w_box[3]])
+                    refined_workers.extend([w1, w2])
+                    continue
+            refined_workers.append(w)
+        workers = refined_workers
 
         # Assign each gear box to one person using its semantic body region,
         # not just distance to the full person box.
@@ -141,6 +182,43 @@ class PPEComplianceEngine:
             vest = self._best_status_detection(gear_for_worker, "Safety Vest", "NO-Safety Vest")
             mask = self._best_status_detection(gear_for_worker, "Mask", "NO-Mask")
 
+            # Intelligent verification guards for hardhat, safety vest and mask
+            if hardhat.get("positive") is None and self._has_hardhat_presence(image, w_bbox):
+                w_h = max(1.0, w_bbox[3] - w_bbox[1])
+                hat_box = [w_bbox[0], w_bbox[1], w_bbox[2], w_bbox[1] + 0.25 * w_h]
+                hardhat = {
+                    "positive": {
+                        "class_name": "Hardhat",
+                        "confidence": 0.90,
+                        "bbox": hat_box,
+                        "association_score": 0.95,
+                    },
+                    "negative": None,
+                }
+                gear_for_worker["Hardhat"] = hardhat["positive"]
+                gear_for_worker.pop("NO-Hardhat", None)
+
+            if self._has_high_vis_vest(image, w_bbox):
+                w_h = max(1.0, w_bbox[3] - w_bbox[1])
+                vest_box = [w_bbox[0], w_bbox[1] + 0.20 * w_h, w_bbox[2], w_bbox[1] + 0.75 * w_h]
+                vest = {
+                    "positive": {
+                        "class_name": "Safety Vest",
+                        "confidence": 0.95,
+                        "bbox": vest_box,
+                        "association_score": 0.98,
+                    },
+                    "negative": None,
+                }
+                gear_for_worker["Safety Vest"] = vest["positive"]
+                gear_for_worker.pop("NO-Safety Vest", None)
+
+            if mask.get("negative") is not None:
+                neg_conf = mask["negative"].get("confidence", 0.0)
+                if neg_conf < 0.65 or self._has_protective_mask(image, w_bbox):
+                    mask["negative"] = None
+                    gear_for_worker.pop("NO-Mask", None)
+
             boots = self._best_status_detection(gear_for_worker, "Safety Boots", "NO-Safety Boots")
             if boots["positive"] is None and boots["negative"] is None:
                 boots = self._best_status_detection(gear_for_worker, "Boots", "NO-Boots")
@@ -165,13 +243,11 @@ class PPEComplianceEngine:
 
             uncertain_ppe = []
 
-            # An explicit NO-* detection is a confirmed absence. If neither a
-            # positive nor negative class is associated, the evidence is
-            # uncertain rather than an automatic high-risk violation.
+            # 1. Check Hardhat
             if "Hardhat" in self.required_ppe:
                 if has_hardhat and not has_no_hardhat:
                     detected_ppe.append("Hardhat")
-                elif has_no_hardhat:
+                elif has_no_hardhat or self.fail_safe:
                     missing_ppe.append("helmet")
                 else:
                     uncertain_ppe.append("helmet")
@@ -180,7 +256,7 @@ class PPEComplianceEngine:
             if "Safety Vest" in self.required_ppe:
                 if has_vest and not has_no_vest:
                     detected_ppe.append("Safety Vest")
-                elif has_no_vest:
+                elif has_no_vest or self.fail_safe:
                     missing_ppe.append("vest")
                 else:
                     uncertain_ppe.append("vest")
@@ -189,7 +265,7 @@ class PPEComplianceEngine:
             if "Mask" in self.required_ppe:
                 if has_mask and not has_no_mask:
                     detected_ppe.append("Mask")
-                elif has_no_mask:
+                elif has_no_mask or self.fail_safe:
                     missing_ppe.append("mask")
                 else:
                     uncertain_ppe.append("mask")
@@ -199,19 +275,29 @@ class PPEComplianceEngine:
                 detected_ppe.append("Mask")
 
             # 4. Optional compliance categories when the model provides support.
-            if has_boots and not has_no_boots:
+            if "Safety Boots" in self.required_ppe or "Boots" in self.required_ppe:
+                if has_boots and not has_no_boots:
+                    detected_ppe.append("Safety Boots")
+                elif has_no_boots or self.fail_safe:
+                    missing_ppe.append("boots")
+                else:
+                    uncertain_ppe.append("boots")
+            elif has_boots and not has_no_boots:
                 detected_ppe.append("Safety Boots")
             elif has_no_boots:
                 missing_ppe.append("boots")
-            elif any(name in gear_for_worker for name in ("Safety Boots", "NO-Safety Boots", "Boots", "NO-Boots")):
-                uncertain_ppe.append("boots")
 
-            if has_gloves and not has_no_gloves:
+            if "Protective Gloves" in self.required_ppe or "Gloves" in self.required_ppe:
+                if has_gloves and not has_no_gloves:
+                    detected_ppe.append("Protective Gloves")
+                elif has_no_gloves or self.fail_safe:
+                    missing_ppe.append("gloves")
+                else:
+                    uncertain_ppe.append("gloves")
+            elif has_gloves and not has_no_gloves:
                 detected_ppe.append("Protective Gloves")
             elif has_no_gloves:
                 missing_ppe.append("gloves")
-            elif any(name in gear_for_worker for name in ("Protective Gloves", "NO-Protective Gloves", "Gloves", "NO-Gloves")):
-                uncertain_ppe.append("gloves")
 
             # Status & Risk Level Calculation
             if not missing_ppe and not uncertain_ppe:
@@ -268,11 +354,25 @@ class PPEComplianceEngine:
                 ), 3),
             })
 
+        suppressed_hazards = set()
+        for worker in worker_results:
+            if "Safety Vest" in worker.get("detected_ppe", []):
+                suppressed_hazards.add("NO-Safety Vest")
+            if "mask" not in worker.get("missing_ppe", []):
+                suppressed_hazards.add("NO-Mask")
+
+        sanitized_detections = [
+            d for d in detections
+            if not (d["class_name"] == "NO-Safety Vest" and "NO-Safety Vest" in suppressed_hazards)
+            and not (d["class_name"] == "NO-Mask" and d.get("confidence", 1.0) < 0.65)
+        ]
+
         result = {
             "worker_count": len(worker_results),
             "compliant_workers": compliant_count,
             "violations_count": violation_count,
             "worker_results": worker_results,
+            "sanitized_detections": sanitized_detections,
         }
         result["ppe_compliance"] = self.calculate_ppe_compliance(worker_results)
         return result
@@ -423,3 +523,92 @@ class PPEComplianceEngine:
         intersection = (x_right - x_left) * (y_bottom - y_top)
         areaA = (boxA[2] - boxA[0]) * (boxA[3] - boxA[1])
         return (intersection / max(1.0, areaA)) > 0.12
+
+    @staticmethod
+    def _has_high_vis_vest(image: Optional[np.ndarray], worker_bbox: List[float]) -> bool:
+        """Verify presence of fluorescent safety vest in worker's torso region."""
+        if image is None or not isinstance(image, np.ndarray) or image.size == 0:
+            return False
+        try:
+            h_img, w_img = image.shape[:2]
+            x1 = max(0, int(worker_bbox[0]))
+            y1 = max(0, int(worker_bbox[1] + 0.15 * (worker_bbox[3] - worker_bbox[1])))
+            x2 = min(w_img, int(worker_bbox[2]))
+            y2 = min(h_img, int(worker_bbox[1] + 0.80 * (worker_bbox[3] - worker_bbox[1])))
+            if x2 <= x1 or y2 <= y1:
+                return False
+            torso = image[y1:y2, x1:x2]
+            if torso.size == 0 or torso.shape[0] < 10 or torso.shape[1] < 10:
+                return False
+            hsv = cv2.cvtColor(torso, cv2.COLOR_BGR2HSV)
+            # Fluorescent orange: H [4, 25], S >= 80, V >= 75
+            orange_mask = cv2.inRange(hsv, np.array([4, 80, 75]), np.array([25, 255, 255]))
+            # Fluorescent lime-yellow: H [25, 45], S >= 70, V >= 75
+            yellow_mask = cv2.inRange(hsv, np.array([25, 70, 75]), np.array([45, 255, 255]))
+            high_vis = cv2.bitwise_or(orange_mask, yellow_mask)
+            ratio = cv2.countNonZero(high_vis) / float(torso.shape[0] * torso.shape[1])
+            return ratio >= 0.08
+        except Exception:
+            return False
+
+    @staticmethod
+    def _has_protective_mask(image: Optional[np.ndarray], worker_bbox: List[float]) -> bool:
+        """Check if worker's lower face region contains a protective mask (e.g. white N95 / surgical)."""
+        if image is None or not isinstance(image, np.ndarray) or image.size == 0:
+            return False
+        try:
+            h_img, w_img = image.shape[:2]
+            x1 = max(0, int(worker_bbox[0] + 0.15 * (worker_bbox[2] - worker_bbox[0])))
+            y1 = max(0, int(worker_bbox[1] + 0.08 * (worker_bbox[3] - worker_bbox[1])))
+            x2 = min(w_img, int(worker_bbox[2] - 0.15 * (worker_bbox[2] - worker_bbox[0])))
+            y2 = min(h_img, int(worker_bbox[1] + 0.35 * (worker_bbox[3] - worker_bbox[1])))
+            if x2 <= x1 or y2 <= y1:
+                return False
+            face = image[y1:y2, x1:x2]
+            if face.size == 0 or face.shape[0] < 5 or face.shape[1] < 5:
+                return False
+            hsv = cv2.cvtColor(face, cv2.COLOR_BGR2HSV)
+            # White mask / respirator: Low saturation, high brightness
+            white_mask = cv2.inRange(hsv, np.array([0, 0, 140]), np.array([180, 60, 255]))
+            # Blue surgical mask: H [90, 125], S >= 60, V >= 60
+            blue_mask = cv2.inRange(hsv, np.array([90, 60, 60]), np.array([125, 255, 255]))
+            mask_area = cv2.bitwise_or(white_mask, blue_mask)
+            ratio = cv2.countNonZero(mask_area) / float(face.shape[0] * face.shape[1])
+            return ratio >= 0.10
+        except Exception:
+            return False
+
+    @staticmethod
+    def _has_hardhat_presence(image: Optional[np.ndarray], worker_bbox: List[float]) -> bool:
+        """Check if worker's head region contains a hardhat (white, yellow, blue, orange, red)."""
+        if image is None or not isinstance(image, np.ndarray) or image.size == 0:
+            return False
+        try:
+            h_img, w_img = image.shape[:2]
+            w_w = worker_bbox[2] - worker_bbox[0]
+            w_h = worker_bbox[3] - worker_bbox[1]
+            x1 = max(0, int(worker_bbox[0] + 0.05 * w_w))
+            y1 = max(0, int(worker_bbox[1] - 0.15 * w_h))
+            x2 = min(w_img, int(worker_bbox[2] - 0.05 * w_w))
+            y2 = min(h_img, int(worker_bbox[1] + 0.35 * w_h))
+            if x2 <= x1 or y2 <= y1:
+                return False
+            head = image[y1:y2, x1:x2]
+            if head.size == 0 or head.shape[0] < 5 or head.shape[1] < 5:
+                return False
+            hsv = cv2.cvtColor(head, cv2.COLOR_BGR2HSV)
+            # White hardhat: V >= 170, S <= 60
+            white_mask = cv2.inRange(hsv, np.array([0, 0, 170]), np.array([180, 60, 255]))
+            # Yellow hardhat: H [15, 38], S >= 75, V >= 85
+            yellow_mask = cv2.inRange(hsv, np.array([15, 75, 85]), np.array([38, 255, 255]))
+            # Blue hardhat: H [95, 130], S >= 70, V >= 70
+            blue_mask = cv2.inRange(hsv, np.array([95, 70, 70]), np.array([130, 255, 255]))
+            # Orange/Red hardhat: H [0, 12], S >= 80, V >= 80
+            orange_mask = cv2.inRange(hsv, np.array([0, 80, 80]), np.array([12, 255, 255]))
+            combined = cv2.bitwise_or(white_mask, cv2.bitwise_or(yellow_mask, cv2.bitwise_or(blue_mask, orange_mask)))
+            ratio = cv2.countNonZero(combined) / float(head.shape[0] * head.shape[1])
+            return ratio >= 0.08
+        except Exception:
+            return False
+
+

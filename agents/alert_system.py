@@ -14,16 +14,19 @@ from typing import List, Dict, Optional
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database.db_manager import SafetyDBManager
 from utils.config import ALERT_COOLDOWN_SECONDS, ALERT_STATUSES, ALERT_SEVERITIES
+from utils.sms_service import SMSService
 
 
 class AlertSystem:
     """
-    Manages safety alert generation with cooldown de-duplication and persistence.
+    Manages safety alert generation with cooldown de-duplication, persistence,
+    and automatic SMS dispatch for High and Critical hazards.
     """
 
     def __init__(self, db_manager: Optional[SafetyDBManager] = None, cooldown_seconds: float = ALERT_COOLDOWN_SECONDS):
         self.db = db_manager or SafetyDBManager()
         self.cooldown_seconds = cooldown_seconds
+        self.sms_service = SMSService(db_manager=self.db)
         self._alert_counter = 1000
 
     def process_worker_violations(self, worker_results: List[Dict]) -> List[Dict]:
@@ -86,9 +89,60 @@ class AlertSystem:
 
             # Save to SQLite database
             self.db.save_alert(alert)
+
+            # Automated SMS Emergency Dispatch for HIGH and CRITICAL risks
+            sms_result = self.sms_service.send_alert_sms(alert)
+            if sms_result:
+                alert["sms_sent"] = True
+                alert["sms_recipient"] = sms_result.get("phone_number")
+                alert["sms_provider"] = sms_result.get("provider")
+                alert["sms_status"] = sms_result.get("status")
+            else:
+                alert["sms_sent"] = False
+
             generated_alerts.append(alert)
 
         return generated_alerts
+
+    def process_site_risk(self, risk_report: Dict, source: str = "Site Area") -> Optional[Dict]:
+        """
+        Evaluate overall site risk report and dispatch critical site alert + SMS
+        if overall site risk reaches HIGH or CRITICAL severity.
+        """
+        level = risk_report.get("level", "Low").upper()
+        if level not in ["HIGH", "CRITICAL"]:
+            return None
+
+        cooldown_key = f"SITE:{level}:{source}"
+        if self.db.check_alert_cooldown(cooldown_key, self.cooldown_seconds):
+            return None
+
+        alert_id = f"ALT-{uuid.uuid4().hex[:6].upper()}"
+        now_iso = datetime.now().isoformat()
+        violation_type = f"High Site Risk Event: Score {risk_report.get('score', 0)} ({risk_report.get('level', 'High')})"
+
+        alert = {
+            "alert_id": alert_id,
+            "timestamp": now_iso,
+            "violation_type": violation_type,
+            "risk_level": level,
+            "worker_id": "Site-Wide",
+            "confidence": 0.95,
+            "status": "New",
+            "cooldown_key": cooldown_key,
+        }
+        self.db.save_alert(alert)
+
+        sms_result = self.sms_service.send_alert_sms(alert)
+        if sms_result:
+            alert["sms_sent"] = True
+            alert["sms_recipient"] = sms_result.get("phone_number")
+            alert["sms_provider"] = sms_result.get("provider")
+            alert["sms_status"] = sms_result.get("status")
+        else:
+            alert["sms_sent"] = False
+
+        return alert
 
     def get_all_alerts(self, status: Optional[str] = None, limit: int = 100) -> List[Dict]:
         """Fetch alerts from the database."""
