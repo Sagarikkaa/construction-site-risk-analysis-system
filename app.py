@@ -46,7 +46,6 @@ from utils.config import (
     ALERT_COOLDOWN_SECONDS,
     SMS_ENABLED, SMS_TRIGGER_LEVELS,
     DEFAULT_SUPERVISOR_PHONE, DEFAULT_WORKER_PHONES,
-    TWILIO_ACCOUNT_SID, TWILIO_FROM_NUMBER,
 )
 from utils.sms_service import SMSService
 from utils.visualization import (
@@ -1483,36 +1482,13 @@ elif page == "⚙️ Configuration":
         | **SMS Alerting Active** | `{'Enabled' if SMS_ENABLED else 'Disabled'}` |
         | **Trigger Risk Levels** | `HIGH` & `CRITICAL` only |
         | **Supervisor Line** | `{DEFAULT_SUPERVISOR_PHONE}` |
-        | **Gateway Provider** | `{'Twilio REST' if TWILIO_ACCOUNT_SID else 'Local Dispatcher (Simulator)'}` |
+        | **Gateway Provider** | `Autonomous Local Dispatcher` |
         """)
 
     with sms_c2:
         st.markdown("###### Registered Worker Phone Directory")
         for wid, phone in DEFAULT_WORKER_PHONES.items():
             st.caption(f"👷 **{wid}**: `{phone}`")
-
-    with st.expander("🔑 Configure Twilio SMS Credentials", expanded=not bool(os.getenv("TWILIO_ACCOUNT_SID"))):
-        st.markdown("""
-        To receive real cellular SMS on your mobile phone (**`+91 6370671276`**):
-        1. Open your [Twilio Console](https://console.twilio.com).
-        2. Copy your **Account SID**, **Auth Token**, and **Twilio Phone Number**.
-        3. Save below to transmit live messages to your phone carrier.
-        """)
-        tw_sid_input = st.text_input("Twilio Account SID", value=os.getenv("TWILIO_ACCOUNT_SID", ""), type="password")
-        tw_token_input = st.text_input("Twilio Auth Token", value=os.getenv("TWILIO_AUTH_TOKEN", ""), type="password")
-        tw_from_input = st.text_input("Twilio Phone Number (Sender)", value=os.getenv("TWILIO_FROM_NUMBER", ""), placeholder="+1234567890")
-
-        if st.button("💾 Save Twilio Credentials"):
-            env_path = os.path.join(PROJECT_ROOT, ".env")
-            with open(env_path, "w", encoding="utf-8") as f:
-                f.write(f"TWILIO_ACCOUNT_SID={tw_sid_input.strip()}\n")
-                f.write(f"TWILIO_AUTH_TOKEN={tw_token_input.strip()}\n")
-                f.write(f"TWILIO_FROM_NUMBER={tw_from_input.strip()}\n")
-            os.environ["TWILIO_ACCOUNT_SID"] = tw_sid_input.strip()
-            os.environ["TWILIO_AUTH_TOKEN"] = tw_token_input.strip()
-            os.environ["TWILIO_FROM_NUMBER"] = tw_from_input.strip()
-            st.success("✅ Twilio credentials saved! Real SMS dispatch is now activated.")
-            st.rerun()
 
     st.markdown("---")
     st.markdown("##### Database Information")

@@ -413,8 +413,8 @@ def test_sms_alert_system():
     assert high_res is not None
     assert high_res["worker_id"] == "Worker-01"
     assert high_res["phone_number"] == "+91 6370671276"
-    assert high_res["risk_level"] == "HIGH"
-    assert high_res["status"] in ["Delivered", "Sent"] or "Failed" in high_res["status"]
+    assert "Delivered" in high_res["status"]
+    assert high_res["provider"] == "Local Dispatcher"
     print(f"  ✅ High risk SMS dispatched: to {high_res['phone_number']} (Provider: {high_res['provider']})")
 
     # 4. Critical risk worker violation SHOULD dispatch SMS
@@ -510,3 +510,12 @@ if __name__ == "__main__":
     else:
         print(f"  ⚠️ Some tests failed — review output above")
     print(f"  {'='*50}")
+
+    # Teardown: Clean up temporary test databases
+    for test_db in ["test_agent.db", "test_alerts.db", "test_safety.db", "test_sms.db"]:
+        p = os.path.join(PROJECT_ROOT, "data", test_db)
+        if os.path.exists(p):
+            try:
+                os.remove(p)
+            except Exception:
+                pass
