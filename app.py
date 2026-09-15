@@ -408,6 +408,7 @@ def load_legacy_agent():
     return SiteRiskAgent()
 
 
+
 def check_model_exists():
     """Check if the YOLO model file is present (auto-recovers if missing)."""
     if not os.path.isfile(MODEL_PATH):
@@ -431,7 +432,7 @@ with st.sidebar:
     page = st.radio(
         "Select Page",
         ["🏠 Dashboard", "🛡️ Safety Monitoring", "🔍 Live Detection",
-         "🚨 Alerts", "📊 Analytics", "👷 Workers", "⚙️ Configuration"],
+         "🚨 Alerts", "📊 Analytics", " Workers", "⚙️ Configuration"],
         label_visibility="collapsed",
     )
 
@@ -679,6 +680,7 @@ def render_ppe_compliance_card(ppe_stats):
             """,
             unsafe_allow_html=True,
         )
+
 
 
 def render_recent_alerts_table(alerts):
