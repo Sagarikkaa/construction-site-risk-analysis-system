@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agents.safety_agent import SafetyAgent
 from database.db_manager import SafetyDBManager
+from risk.construction_risk_engine import ConstructionRiskEngine
 from utils.config import DEFAULT_CONFIDENCE_THRESHOLD, ALERT_STATUSES
 from utils.sms_service import SMSService
 
@@ -38,6 +39,7 @@ except ImportError:
 safety_agent = SafetyAgent()
 db_manager = SafetyDBManager()
 sms_service = SMSService(db_manager=db_manager)
+risk_engine = ConstructionRiskEngine(db_manager=db_manager)
 
 
 # ------------------------------------------------------------------
@@ -70,6 +72,13 @@ if HAS_FASTAPI:
         phone_number: str
         risk_level: str
         message: str
+
+    class ProjectAssessmentRequest(BaseModel):
+        project_id: str
+        inspection_reports: List[Dict] = []
+        safety_logs: List[Dict] = []
+        incidents: List[Dict] = []
+        safety_trends: List[Dict] = []
 
     @app.get("/")
     def root():
@@ -164,6 +173,27 @@ if HAS_FASTAPI:
     def get_analytics():
         """Retrieve safety analytics metrics and chart data."""
         return db_manager.get_analytics_summary()
+
+    @app.post("/api/risk/projects/assess")
+    def assess_project(payload: ProjectAssessmentRequest):
+        """Run compliance and insurance agents for one construction project."""
+        return risk_engine.assess_project(
+            project_id=payload.project_id,
+            inspection_reports=payload.inspection_reports,
+            safety_logs=payload.safety_logs,
+            incidents=payload.incidents,
+            safety_trends=payload.safety_trends,
+        )
+
+    @app.get("/api/risk/projects/{project_id}/summary")
+    def get_project_summary(project_id: str):
+        """Return audit readiness, open violations, insurance risk, and alerts."""
+        return db_manager.get_project_risk_summary(project_id)
+
+    @app.get("/api/risk/projects/{project_id}/report")
+    def get_project_report(project_id: str):
+        """Return the persisted compliance and insurance intelligence report."""
+        return db_manager.get_project_compliance_report(project_id)
 
     @app.get("/api/safety/workers")
     def get_workers(limit: int = Query(100, ge=1, le=500)):

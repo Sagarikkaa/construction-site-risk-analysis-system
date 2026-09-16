@@ -80,6 +80,58 @@ class SafetyDBManager:
                 )
             """)
 
+            # Milestone 3 project-level alert fields. Existing Milestone 2
+            # alert records remain compatible through nullable migration columns.
+            existing_alert_columns = {
+                row[1] for row in cursor.execute("PRAGMA table_info(alerts)").fetchall()
+            }
+            for column, definition in {
+                "project_id": "TEXT",
+                "alert_type": "TEXT",
+                "severity": "TEXT",
+                "created_at": "TEXT",
+            }.items():
+                if column not in existing_alert_columns:
+                    cursor.execute(f"ALTER TABLE alerts ADD COLUMN {column} {definition}")
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS compliance_checks (
+                    compliance_id TEXT PRIMARY KEY,
+                    project_id TEXT NOT NULL,
+                    regulation_name TEXT NOT NULL,
+                    compliance_status TEXT NOT NULL,
+                    checked_at TEXT NOT NULL
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS insurance_cases (
+                    case_id TEXT PRIMARY KEY,
+                    project_id TEXT NOT NULL,
+                    claim_type TEXT NOT NULL,
+                    risk_score REAL NOT NULL,
+                    status TEXT NOT NULL,
+                    timestamp TEXT NOT NULL
+                )
+            """)
+
+            # Upgrade insurance_cases created by earlier Milestone 3 versions.
+            # Nullable/defaulted columns keep existing insurance records intact.
+            existing_insurance_columns = {
+                row[1] for row in cursor.execute("PRAGMA table_info(insurance_cases)").fetchall()
+            }
+            for column, definition in {
+                "project_id": "TEXT",
+                "status": "TEXT DEFAULT 'Open'",
+                "timestamp": "TEXT",
+            }.items():
+                if column not in existing_insurance_columns:
+                    cursor.execute(f"ALTER TABLE insurance_cases ADD COLUMN {column} {definition}")
+            cursor.execute(
+                "UPDATE insurance_cases SET timestamp = ? WHERE timestamp IS NULL",
+                (datetime.now().isoformat(),),
+            )
+
             # Worker tracking table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS workers (
@@ -108,6 +160,7 @@ class SafetyDBManager:
                     provider TEXT
                 )
             """)
+
             conn.commit()
 
     # ------------------------------------------------------------------
@@ -234,6 +287,136 @@ class SafetyDBManager:
                 )
             rows = cursor.fetchall()
             return [dict(r) for r in rows]
+
+    # ------------------------------------------------------------------
+    # Milestone 3 Compliance, Insurance, and Project Alerts
+    # ------------------------------------------------------------------
+    def save_compliance_check(self, check: Dict) -> str:
+        with self.get_connection() as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO compliance_checks
+                    (compliance_id, project_id, regulation_name, compliance_status, checked_at)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    check["compliance_id"],
+                    check["project_id"],
+                    check["regulation_name"],
+                    check["compliance_status"],
+                    check["checked_at"],
+                ),
+            )
+        return check["compliance_id"]
+
+    def get_compliance_checks(self, project_id: Optional[str] = None) -> List[Dict]:
+        with self.get_connection() as conn:
+            if project_id:
+                rows = conn.execute(
+                    "SELECT * FROM compliance_checks WHERE project_id = ? ORDER BY checked_at DESC",
+                    (project_id,),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM compliance_checks ORDER BY checked_at DESC"
+                ).fetchall()
+            return [dict(row) for row in rows]
+
+    def save_insurance_case(self, case: Dict) -> str:
+        with self.get_connection() as conn:
+            columns = {
+                row[1] for row in conn.execute("PRAGMA table_info(insurance_cases)").fetchall()
+            }
+            values = {
+                "case_id": case["case_id"],
+                "project_id": case["project_id"],
+                "claim_type": case["claim_type"],
+                "risk_score": case["risk_score"],
+                "status": case["status"],
+                "timestamp": case.get("timestamp") or datetime.now().isoformat(),
+            }
+            insert_columns = [column for column in values if column in columns]
+            placeholders = ", ".join("?" for _ in insert_columns)
+            column_sql = ", ".join(insert_columns)
+            conn.execute(
+                f"INSERT OR REPLACE INTO insurance_cases ({column_sql}) VALUES ({placeholders})",
+                tuple(values[column] for column in insert_columns),
+            )
+        return case["case_id"]
+
+    def get_insurance_cases(self, project_id: Optional[str] = None) -> List[Dict]:
+        with self.get_connection() as conn:
+            if project_id:
+                rows = conn.execute(
+                    "SELECT * FROM insurance_cases WHERE project_id = ? ORDER BY risk_score DESC",
+                    (project_id,),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM insurance_cases ORDER BY risk_score DESC"
+                ).fetchall()
+            return [dict(row) for row in rows]
+
+    def get_project_risk_summary(self, project_id: Optional[str] = None) -> Dict:
+        checks = self.get_compliance_checks(project_id)
+        cases = self.get_insurance_cases(project_id)
+        alerts = [
+            alert for alert in self.get_alerts()
+            if not project_id or alert.get("project_id") == project_id
+        ]
+        compliant = sum(check["compliance_status"] == "Compliant" for check in checks)
+        readiness = round((compliant / max(1, len(checks))) * 100.0, 1)
+        highest_case_score = max((case["risk_score"] for case in cases), default=0.0)
+        return {
+            "project_id": project_id,
+            "audit_readiness_score": readiness,
+            "open_violations": sum(check["compliance_status"] != "Compliant" for check in checks),
+            "insurance_risk_score": highest_case_score,
+            "insurance_exposure": (
+                "High" if highest_case_score >= 70 else
+                "Medium" if highest_case_score >= 35 else "Low"
+            ),
+            "alerts": alerts,
+        }
+
+    def get_project_compliance_report(self, project_id: str) -> Dict:
+        """Return the persisted compliance and insurance audit report."""
+        checks = self.get_compliance_checks(project_id)
+        cases = self.get_insurance_cases(project_id)
+        summary = self.get_project_risk_summary(project_id)
+        return {
+            "project_id": project_id,
+            "summary": summary,
+            "compliance_checks": checks,
+            "insurance_cases": cases,
+            "report_generated_at": datetime.now().isoformat(),
+        }
+
+    def save_project_alert(self, alert: Dict) -> str:
+        now = alert.get("created_at", datetime.now().isoformat())
+        with self.get_connection() as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO alerts
+                    (alert_id, project_id, alert_type, severity, created_at,
+                     timestamp, violation_type, risk_level, status, cooldown_key, confidence)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    alert["alert_id"],
+                    alert["project_id"],
+                    alert["alert_type"],
+                    alert["severity"],
+                    now,
+                    now,
+                    alert["alert_type"],
+                    alert["severity"],
+                    alert.get("status", "New"),
+                    alert.get("cooldown_key", ""),
+                    float(alert.get("confidence", 1.0)),
+                ),
+            )
+        return alert["alert_id"]
 
     def check_alert_cooldown(self, cooldown_key: str, cooldown_seconds: float) -> bool:
         """Returns True if alert is in cooldown (should be suppressed)."""
@@ -413,4 +596,5 @@ class SafetyDBManager:
             cursor.execute("SELECT * FROM sms_alerts ORDER BY id DESC LIMIT ?", (limit,))
             rows = cursor.fetchall()
             return [dict(r) for r in rows]
+
 

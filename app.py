@@ -30,6 +30,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 from datetime import datetime
+from typing import Dict, List, Optional, Any
 
 # Ensure project root is on the path
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -58,7 +59,6 @@ from utils.visualization import (
     create_risk_distribution_chart,
     create_safety_trend_chart,
 )
-
 # ──────────────────────────────────────────────────────────────────────
 # Page configuration
 # ──────────────────────────────────────────────────────────────────────
@@ -431,8 +431,8 @@ with st.sidebar:
     st.markdown("#### 🧭 Navigation")
     page = st.radio(
         "Select Page",
-        ["🏠 Dashboard", "🛡️ Safety Monitoring", "🔍 Live Detection",
-         "🚨 Alerts", "📊 Analytics", " Workers", "⚙️ Configuration"],
+        ["🏠 Dashboard", "🏛️ Compliance & Insurance", "🛡️ Safety Monitoring", "🔍 Live Detection",
+         "🚨 Alerts", "📊 Analytics", "👷 Workers", "⚙️ Configuration"],
         label_visibility="collapsed",
     )
 
@@ -553,6 +553,8 @@ if not check_model_exists():
 
 safety_agent, db_manager = load_safety_agent()
 legacy_agent = load_legacy_agent()
+from risk.construction_risk_engine import ConstructionRiskEngine
+risk_engine = ConstructionRiskEngine(db_manager=db_manager)
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -664,7 +666,6 @@ def render_ppe_compliance_card(ppe_stats):
         status = stats.get("status", "Low compliance")
         width = max(0, min(100, percentage))
         color = "#22c55e" if percentage >= 90 else ("#f59e0b" if percentage >= 75 else "#ef4444")
-        bar_width = max(4, int((width / 100) * 100))
         st.markdown(
             f"""
             <div style="margin: 0.7rem 0; padding: 0.8rem 0.9rem; border-radius: 12px; background: rgba(21,27,42,0.72); border: 1px solid rgba(148,163,184,0.12);">
@@ -682,7 +683,6 @@ def render_ppe_compliance_card(ppe_stats):
         )
 
 
-
 def render_recent_alerts_table(alerts):
     """Render recent alerts as a compact table with severity badges."""
     if not alerts:
@@ -693,13 +693,15 @@ def render_recent_alerts_table(alerts):
     for alert in alerts[:10]:
         risk = str(alert.get("risk_level", "LOW")).upper()
         risk_class = risk.lower() if risk.lower() in {"low", "medium", "high", "critical"} else "low"
+        conf = alert.get("confidence")
+        conf_str = f"{float(conf):.0%}" if conf is not None else "N/A"
         rows.append(
             "<tr>"
             f"<td>{html.escape(str(alert.get('timestamp', ''))[:19])}</td>"
             f"<td>{html.escape(str(alert.get('worker_id', 'Unknown')))}</td>"
             f"<td>{html.escape(str(alert.get('violation_type', 'Safety violation')))}</td>"
             f'<td><span class="risk-pill {risk_class}">{html.escape(risk)}</span></td>'
-            f"<td>{float(alert.get('confidence', 0)):.0%}</td>"
+            f"<td>{conf_str}</td>"
             f"<td>{html.escape(str(alert.get('status', 'New')))}</td>"
             "</tr>"
         )
@@ -711,6 +713,210 @@ def render_recent_alerts_table(alerts):
         f'<tbody>{"".join(rows)}</tbody></table></div>',
         unsafe_allow_html=True,
     )
+
+
+
+def render_compliance_assessment_section(db_manager, risk_engine):
+    """Render interactive inputs, calculation breakdown, and explainability for Milestone 3."""
+    st.markdown('<div class="section-header">⚙️ Interactive Compliance & Insurance Agent Assessment</div>', unsafe_allow_html=True)
+    st.caption("Submit inspection and incident records to calculate scores from actual evidence.")
+
+    # Scenario Presets
+    st.markdown("##### ⚡ Quick Scenarios")
+    pcol1, pcol2, pcol3 = st.columns(3)
+    with pcol1:
+        if st.button("🟢 Scenario 1: Optimal Site (100% Compliant)", use_container_width=True):
+            st.session_state["risk_project_id"] = "PROJECT-OPTIMAL"
+            st.session_state["inspection_reports_json"] = '[{"status": "compliant", "finding": "hardhat and safety vest verified"}]'
+            st.session_state["safety_logs_json"] = '[{"status": "compliant", "finding": "daily site inspection complete"}]'
+            st.session_state["incidents_json"] = '[]'
+            st.session_state["safety_trends_json"] = '[{"violations": 0}]'
+            assessment = risk_engine.assess_project(
+                project_id="PROJECT-OPTIMAL",
+                inspection_reports=[{"status": "compliant", "finding": "hardhat and safety vest verified"}],
+                safety_logs=[{"status": "compliant", "finding": "daily site inspection complete"}],
+                incidents=[],
+                safety_trends=[{"violations": 0}],
+            )
+            st.session_state["project_assessment"] = assessment
+            st.rerun()
+
+    with pcol2:
+        if st.button("🟡 Scenario 2: Moderate Risk (84% Compliant)", use_container_width=True):
+            st.session_state["risk_project_id"] = "PROJECT-MODERATE"
+            st.session_state["inspection_reports_json"] = '[{"status": "compliant", "finding": "PPE worn"}]'
+            st.session_state["safety_logs_json"] = '[{"status": "non-compliant", "finding": "missing safety vest in sector B"}]'
+            st.session_state["incidents_json"] = '[{"severity": "medium", "description": "minor trip hazard recorded"}]'
+            st.session_state["safety_trends_json"] = '[{"violations": 2}]'
+            assessment = risk_engine.assess_project(
+                project_id="PROJECT-MODERATE",
+                inspection_reports=[{"status": "compliant", "finding": "PPE worn"}],
+                safety_logs=[{"status": "non-compliant", "finding": "missing safety vest in sector B"}],
+                incidents=[{"severity": "medium", "description": "minor trip hazard recorded"}],
+                safety_trends=[{"violations": 2}],
+            )
+            st.session_state["project_assessment"] = assessment
+            st.rerun()
+
+    with pcol3:
+        if st.button("🔴 Scenario 3: Critical High Risk (45% Compliant)", use_container_width=True):
+            st.session_state["risk_project_id"] = "PROJECT-CRITICAL"
+            st.session_state["inspection_reports_json"] = '[{"status": "failed", "finding": "major safety violation at scaffolding"}]'
+            st.session_state["safety_logs_json"] = '[{"status": "violation", "finding": "unauthorized zone entry"}]'
+            st.session_state["incidents_json"] = '[{"severity": "critical", "description": "structural failure warning"}]'
+            st.session_state["safety_trends_json"] = '[{"violations": 8}]'
+            assessment = risk_engine.assess_project(
+                project_id="PROJECT-CRITICAL",
+                inspection_reports=[{"status": "failed", "finding": "major safety violation at scaffolding"}],
+                safety_logs=[{"status": "violation", "finding": "unauthorized zone entry"}],
+                incidents=[{"severity": "critical", "description": "structural failure warning"}],
+                safety_trends=[{"violations": 8}],
+            )
+            st.session_state["project_assessment"] = assessment
+            st.rerun()
+
+    st.markdown("---")
+    st.markdown("##### 📝 Custom Project Assessment Inputs")
+    assessment_col1, assessment_col2 = st.columns(2)
+    with assessment_col1:
+        project_id = st.text_input(
+            "Project ID",
+            value=st.session_state.get("risk_project_id", "PROJECT-001"),
+            key="risk_project_id",
+        )
+        inspection_text = st.text_area(
+            "Inspection Reports (JSON list)",
+            value=st.session_state.get("inspection_reports_json", '[{"status": "compliant", "finding": "hardhat and safety vest verified"}]'),
+            height=120,
+            key="inspection_reports_json",
+        )
+        safety_logs_text = st.text_area(
+            "Safety Logs (JSON list)",
+            value=st.session_state.get("safety_logs_json", '[{"status": "compliant", "finding": "daily site inspection complete"}]'),
+            height=120,
+            key="safety_logs_json",
+        )
+    with assessment_col2:
+        incidents_text = st.text_area(
+            "Reported Incidents (JSON list)",
+            value=st.session_state.get("incidents_json", "[]"),
+            height=120,
+            key="incidents_json",
+        )
+        trends_text = st.text_area(
+            "Safety Violation Trends (JSON list)",
+            value=st.session_state.get("safety_trends_json", '[{"violations": 0}]'),
+            height=120,
+            key="safety_trends_json",
+        )
+
+    if st.button("▶ Run Custom Project Risk Assessment", type="primary", key="run_project_assessment"):
+        try:
+            if not project_id.strip():
+                raise ValueError("Project ID is required.")
+            parsed_inputs = {
+                "inspection_reports": json.loads(inspection_text),
+                "safety_logs": json.loads(safety_logs_text),
+                "incidents": json.loads(incidents_text),
+                "safety_trends": json.loads(trends_text),
+            }
+            if not all(isinstance(value, list) for value in parsed_inputs.values()):
+                raise ValueError("Each assessment input must be a JSON list.")
+            assessment = risk_engine.assess_project(project_id=project_id.strip(), **parsed_inputs)
+            st.session_state["project_assessment"] = assessment
+            st.success(f"Assessment for {project_id} completed successfully and recorded.")
+            st.rerun()
+        except (json.JSONDecodeError, ValueError) as exc:
+            st.error(f"Invalid assessment input: {exc}")
+        except Exception as exc:
+            st.error(f"Assessment failed: {exc}")
+
+    assessment = st.session_state.get("project_assessment")
+    if assessment:
+        compliance = assessment["compliance"]
+        insurance = assessment["insurance"]
+        overall_compliance_score = float(compliance.get(
+            "overall_compliance_score",
+            compliance.get("compliance_score", compliance.get("audit_readiness_score", 0.0)),
+        ))
+        inspection_score = float(compliance.get("inspection_score", overall_compliance_score))
+        safety_log_score = float(compliance.get("safety_log_score", overall_compliance_score))
+        violation_score = float(compliance.get("violation_score", overall_compliance_score))
+        overall_insurance_risk = float(insurance.get(
+            "overall_insurance_risk", insurance.get("insurance_risk_score", insurance.get("risk_score", 0.0)),
+        ))
+
+        st.markdown('<div class="section-header">🏛️ Compliance Agent Breakdown & Formula</div>', unsafe_allow_html=True)
+        
+        # Component scores breakdown row
+        comp_comp1, comp_comp2, comp_comp3 = st.columns(3)
+        with comp_comp1:
+            st.metric("Inspection Score (40%)", f"{inspection_score:.1f}/100")
+        with comp_comp2:
+            st.metric("Safety Log Score (30%)", f"{safety_log_score:.1f}/100")
+        with comp_comp3:
+            st.metric("Violation Score (30%)", f"{violation_score:.1f}/100")
+
+        # Weighted calculation display
+        st.info(
+            f"**Exact Mathematical Formula:** `Compliance = (0.40 × {inspection_score:.1f}) + ` "
+            f"`(0.30 × {safety_log_score:.1f}) + ` "
+            f"`(0.30 × {violation_score:.1f})` = "
+            f"**{overall_compliance_score:.2f}%**"
+        )
+
+        compliance_col1, compliance_col2, compliance_col3 = st.columns(3)
+        with compliance_col1:
+            st.metric("Overall Compliance Score", f"{overall_compliance_score:.2f}%")
+            st.progress(max(0.0, min(1.0, overall_compliance_score / 100.0)))
+        with compliance_col2:
+            st.metric("Compliance Level", compliance.get("compliance_level", "Unknown"))
+            st.metric("Regulatory Readiness", f"{float(compliance.get('regulatory_readiness_score', overall_compliance_score)):.2f}%")
+        with compliance_col3:
+            st.metric("Total Inspections", compliance.get("total_inspections", 0))
+            st.metric("Non-Compliant Inspections", compliance.get("non_compliant_inspections", 0))
+            st.metric("Safety Violations", compliance.get("total_violations", 0))
+        
+        if compliance.get("checks"):
+            st.markdown("##### 📋 Compliance Checkpoints Log")
+            st.dataframe(pd.DataFrame(compliance["checks"]), use_container_width=True, hide_index=True)
+
+        st.markdown('<div class="section-header">🛡️ Insurance Agent Risk Analysis & Exposure</div>', unsafe_allow_html=True)
+        
+        # Insurance risk components row
+        ins_comp1, ins_comp2, ins_comp3 = st.columns(3)
+        with ins_comp1:
+            st.metric("Incident Risk (50%)", f"{float(insurance.get('incident_risk', overall_insurance_risk)):.1f}/100")
+        with ins_comp2:
+            st.metric("Violation Risk (25%)", f"{float(insurance.get('violation_risk', 0.0)):.1f}/100")
+        with ins_comp3:
+            st.metric("Compliance Risk (25%)", f"{float(insurance.get('compliance_risk', 0.0)):.1f}/100")
+
+        # Weighted calculation display
+        st.info(
+            f"**Exact Insurance Risk Formula:** `Risk = (0.50 × {float(insurance.get('incident_risk', overall_insurance_risk)):.1f}) + ` "
+            f"`(0.25 × {float(insurance.get('violation_risk', 0.0)):.1f}) + ` "
+            f"`(0.25 × {float(insurance.get('compliance_risk', 0.0)):.1f})` = "
+            f"**{overall_insurance_risk:.2f}/100**"
+        )
+
+        insurance_col1, insurance_col2, insurance_col3 = st.columns(3)
+        with insurance_col1:
+            st.metric("Overall Insurance Risk", f"{overall_insurance_risk:.2f}/100")
+            st.progress(max(0.0, min(1.0, overall_insurance_risk / 100.0)))
+        with insurance_col2:
+            st.metric("Insurance Risk Level", insurance.get("insurance_risk_level", insurance.get("risk_level", "Unknown")))
+            st.metric("Claim Risk", insurance.get("claim_risk", "Unknown"))
+            st.metric("Insurance Exposure", insurance.get("insurance_exposure", "Unknown"))
+        with insurance_col3:
+            st.metric("Reported Incidents", insurance.get("incident_count", 0))
+            st.metric("Critical Incidents", insurance.get("critical_incidents", 0))
+            st.metric("High-Severity Incidents", insurance.get("high_severity_incidents", 0))
+
+        st.markdown('<div class="section-header">💡 Targeted Recommendations</div>', unsafe_allow_html=True)
+        recs = assessment.get("recommendations", insurance.get("recommended_actions", []))
+        for recommendation in recs:
+            st.markdown(f"- {recommendation}")
 
 
 # ======================================================================
@@ -752,10 +958,6 @@ if page == "🏠 Dashboard":
         st.markdown('<div class="metric-card overview-card"><div class="label">OVERALL SAFETY SCORE</div>'
                     f'<div class="value" style="color:{score_color}">{score}%</div>'
                     '<div class="description">Based on latest worker PPE status</div></div>', unsafe_allow_html=True)
-
-    st.markdown("")
-
-    st.markdown("")
 
     # The home page is also an actionable entry point. Keep the full pages
     # available, but make an uploaded image useful without changing navigation.
@@ -849,6 +1051,13 @@ if page == "🏠 Dashboard":
 
 
 # ======================================================================
+#  PAGE: COMPLIANCE & INSURANCE INTELLIGENCE
+# ======================================================================
+elif page == "🏛️ Compliance & Insurance":
+    render_compliance_assessment_section(db_manager, risk_engine)
+
+
+# ======================================================================
 #  PAGE: SAFETY MONITORING
 # ======================================================================
 elif page == "🛡️ Safety Monitoring":
@@ -913,13 +1122,15 @@ elif page == "🛡️ Safety Monitoring":
                 play_alert_beep(report["alerts"])
                 for alert in report["alerts"]:
                     sev = alert.get("risk_level", "MEDIUM").lower()
+                    conf = alert.get("confidence")
+                    conf_str = f"{float(conf):.0%}" if conf is not None else "N/A"
                     st.markdown(f"""
                     <div class="alert-card {sev}">
                         <div class="alert-title">{alert.get('risk_level', 'N/A')} RISK ALERT</div>
                         <div class="alert-meta">
                             {alert.get('violation_type', '')} &nbsp;│&nbsp;
                             🕐 {alert.get('timestamp', '')[:19]} &nbsp;│&nbsp;
-                            📊 Confidence: {alert.get('confidence', 0):.0%} &nbsp;│&nbsp;
+                            📊 Confidence: {conf_str} &nbsp;│&nbsp;
                             📌 {alert.get('status', 'New')}
                         </div>
                     </div>
@@ -1221,6 +1432,8 @@ elif page == "🚨 Alerts":
                 </div>
                 """
 
+            conf = alert.get("confidence")
+            conf_str = f"{float(conf):.0%}" if conf is not None else "N/A"
             st.markdown(f"""
             <div class="alert-card {sev}">
                 <div class="alert-title">{alert.get('risk_level', 'N/A')} RISK ALERT — {alert_id}</div>
@@ -1228,7 +1441,7 @@ elif page == "🚨 Alerts":
                     ⚠️ {alert.get('violation_type', 'Safety Violation')} <br>
                     🕐 Time: {alert.get('timestamp', '')[:19]} &nbsp;│&nbsp;
                     👷 Worker: {alert.get('worker_id', 'N/A')} &nbsp;│&nbsp;
-                    📊 Confidence: {alert.get('confidence', 0):.0%} &nbsp;│&nbsp;
+                    📊 Confidence: {conf_str} &nbsp;│&nbsp;
                     📌 Status: <b>{alert.get('status', 'New')}</b>
                 </div>
                 {sms_badge_html}
@@ -1315,8 +1528,6 @@ elif page == "📊 Analytics":
         render_metric_card("Total Violations", analytics["total_violations"], "#ef4444")
     with col5:
         render_metric_card("Total Alerts", analytics["total_alerts"], "#f97316")
-
-    st.markdown("")
 
     # Charts
     st.caption(
@@ -1493,6 +1704,8 @@ elif page == "⚙️ Configuration":
     | `PATCH` | `/api/safety/alerts/{id}` | Update alert status |
     | `GET` | `/api/safety/analytics` | Aggregate safety metrics |
     | `GET` | `/api/safety/workers` | Worker monitoring records |
+    | `POST` | `/api/risk/projects/assess` | Run compliance and insurance assessment |
+    | `GET` | `/api/risk/projects/{project_id}/summary` | Project risk metrics and alerts |
     """)
 
     st.info("💡 Start the REST API server with: `python api/server.py`")

@@ -4758,5 +4758,215 @@
     "worker_count": 2,
     "risk_score": 0,
     "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-15T22:19:29.537541",
+    "filename": "Screenshot 2026-09-03 090536.png",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 25,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-16T20:18:20.976504",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-16T20:19:01.144017",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-16T20:19:15.446585",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-16T20:33:28.226234",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-16T20:35:37.115082",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-16T20:37:24.314169",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-16T21:06:15.183728",
+    "filename": "image1.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-16T21:06:15.603748",
+    "filename": "image10.jpg",
+    "analysis_type": "image",
+    "total_objects": 7,
+    "hazard_count": 0,
+    "worker_count": 3,
+    "risk_score": 31,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-16T21:06:16.210035",
+    "filename": "image1003.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-16T21:06:16.660107",
+    "filename": "image1007.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-16T21:06:17.091388",
+    "filename": "image1009.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 6,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-16T21:06:19.494867",
+    "filename": "image1.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 4,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-16T21:06:20.067783",
+    "filename": "image10.jpg",
+    "analysis_type": "image",
+    "total_objects": 7,
+    "hazard_count": 1,
+    "worker_count": 3,
+    "risk_score": 31,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-16T21:16:29.036888",
+    "filename": "image1.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-16T21:16:30.084151",
+    "filename": "image10.jpg",
+    "analysis_type": "image",
+    "total_objects": 7,
+    "hazard_count": 0,
+    "worker_count": 3,
+    "risk_score": 31,
+    "risk_level": "Medium"
+  },
+  {
+    "timestamp": "2026-09-16T21:16:30.638607",
+    "filename": "image1003.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-16T21:16:30.989559",
+    "filename": "image1007.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 0,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-16T21:16:31.275004",
+    "filename": "image1009.jpg",
+    "analysis_type": "image",
+    "total_objects": 4,
+    "hazard_count": 0,
+    "worker_count": 1,
+    "risk_score": 6,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-16T21:16:33.350012",
+    "filename": "image1.jpg",
+    "analysis_type": "image",
+    "total_objects": 3,
+    "hazard_count": 1,
+    "worker_count": 1,
+    "risk_score": 4,
+    "risk_level": "Low"
+  },
+  {
+    "timestamp": "2026-09-16T21:16:33.658718",
+    "filename": "image10.jpg",
+    "analysis_type": "image",
+    "total_objects": 7,
+    "hazard_count": 1,
+    "worker_count": 3,
+    "risk_score": 31,
+    "risk_level": "Medium"
   }
 ]

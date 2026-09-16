@@ -350,6 +350,38 @@ def create_safety_trend_chart(timestamps, violation_counts) -> plt.Figure:
     return fig
 
 
+def create_applications_chart() -> plt.Figure:
+    """Grouped bar chart showing Applications Created + Submitted over months."""
+    months = ["Feb 2023", "Mar 2023", "Apr 2023", "May 2023", "Jun 2023", "Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023"]
+    created = [1, 2, 10, 4, 2, 0, 2, 2, 1]
+    submitted = [1, 2, 14, 13, 0, 1, 2, 2, 0]
+
+    x = np.arange(len(months))
+    width = 0.35
+
+    fig, ax = plt.subplots(figsize=(8, 3.2))
+    fig.patch.set_facecolor("#ffffff")
+    ax.set_facecolor("#ffffff")
+
+    ax.bar(x - width / 2, created, width, label="Created", color="#1e3a8a", edgecolor="none")
+    ax.bar(x + width / 2, submitted, width, label="Submitted", color="#8b5cf6", edgecolor="none")
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(months, fontsize=8, color="#64748b")
+    ax.set_yticks([0, 5, 10, 15])
+    ax.tick_params(colors="#64748b", labelsize=8)
+    ax.grid(axis="y", color="#e2e8f0", linestyle="-", linewidth=0.7, alpha=0.8)
+
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_visible(False)
+    ax.spines["bottom"].set_color("#cbd5e1")
+
+    ax.set_title("Applications Created + Submitted", color="#0f172a", fontsize=11, fontweight="600", loc="left", pad=10)
+    plt.tight_layout()
+    return fig
+
+
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
