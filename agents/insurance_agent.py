@@ -102,11 +102,10 @@ class InsuranceAgent:
 
         # Explainability text
         explanation = (
-            f"Incident Risk: {incident_risk} (Weight: 50%), "
-            f"Violation Risk: {violation_risk} (Weight: 25%), "
-            f"Compliance Risk: {compliance_risk} (Weight: 25%). "
-            f"Calculation: ({incident_risk} × 50%) + ({violation_risk} × 25%) + ({compliance_risk} × 25%) "
-            f"= {overall_insurance_risk}/100 ({insurance_risk_level})."
+            f"Incident Risk: {incident_risk} (50% weight), "
+            f"Violation Risk: {violation_risk} (25% weight), "
+            f"Compliance Risk: {compliance_risk} (25% weight). "
+            f"Overall Insurance Risk: {overall_insurance_risk}/100 ({insurance_risk_level})."
         )
 
         # Database case persistence with valid timestamp

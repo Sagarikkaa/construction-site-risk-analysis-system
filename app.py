@@ -846,7 +846,7 @@ def render_compliance_assessment_section(db_manager, risk_engine):
             "overall_insurance_risk", insurance.get("insurance_risk_score", insurance.get("risk_score", 0.0)),
         ))
 
-        st.markdown('<div class="section-header">🏛️ Compliance Agent Breakdown & Formula</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">🏛️ Compliance Agent Breakdown</div>', unsafe_allow_html=True)
         
         # Component scores breakdown row
         comp_comp1, comp_comp2, comp_comp3 = st.columns(3)
@@ -856,14 +856,6 @@ def render_compliance_assessment_section(db_manager, risk_engine):
             st.metric("Safety Log Score (30%)", f"{safety_log_score:.1f}/100")
         with comp_comp3:
             st.metric("Violation Score (30%)", f"{violation_score:.1f}/100")
-
-        # Weighted calculation display
-        st.info(
-            f"**Exact Mathematical Formula:** `Compliance = (0.40 × {inspection_score:.1f}) + ` "
-            f"`(0.30 × {safety_log_score:.1f}) + ` "
-            f"`(0.30 × {violation_score:.1f})` = "
-            f"**{overall_compliance_score:.2f}%**"
-        )
 
         compliance_col1, compliance_col2, compliance_col3 = st.columns(3)
         with compliance_col1:
@@ -891,14 +883,6 @@ def render_compliance_assessment_section(db_manager, risk_engine):
             st.metric("Violation Risk (25%)", f"{float(insurance.get('violation_risk', 0.0)):.1f}/100")
         with ins_comp3:
             st.metric("Compliance Risk (25%)", f"{float(insurance.get('compliance_risk', 0.0)):.1f}/100")
-
-        # Weighted calculation display
-        st.info(
-            f"**Exact Insurance Risk Formula:** `Risk = (0.50 × {float(insurance.get('incident_risk', overall_insurance_risk)):.1f}) + ` "
-            f"`(0.25 × {float(insurance.get('violation_risk', 0.0)):.1f}) + ` "
-            f"`(0.25 × {float(insurance.get('compliance_risk', 0.0)):.1f})` = "
-            f"**{overall_insurance_risk:.2f}/100**"
-        )
 
         insurance_col1, insurance_col2, insurance_col3 = st.columns(3)
         with insurance_col1:

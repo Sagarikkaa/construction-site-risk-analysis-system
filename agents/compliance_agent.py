@@ -121,11 +121,10 @@ class ComplianceAgent:
 
         # Explanation / Breakdown text
         explanation = (
-            f"Inspection Score: {inspection_score} (Weight: 40%), "
-            f"Safety Log Score: {safety_log_score} (Weight: 30%), "
-            f"Violation Score: {violation_score} (Weight: 30%). "
-            f"Calculation: ({inspection_score} × 40%) + ({safety_log_score} × 30%) + ({violation_score} × 30%) "
-            f"= {overall_compliance_score}/100 ({compliance_level})."
+            f"Inspection Score: {inspection_score} (40% weight), "
+            f"Safety Log Score: {safety_log_score} (30% weight), "
+            f"Violation Score: {violation_score} (30% weight). "
+            f"Overall Compliance: {overall_compliance_score}/100 ({compliance_level})."
         )
 
         # Save checks to database
