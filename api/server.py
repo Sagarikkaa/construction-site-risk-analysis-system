@@ -21,14 +21,18 @@ from pydantic import BaseModel
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agents.safety_agent import SafetyAgent
+from agents.reporting_agent import ReportingAgent
 from database.db_manager import SafetyDBManager
 from risk.construction_risk_engine import ConstructionRiskEngine
+from risk.intelligence_engine import ConstructionRiskIntelligenceEngine
 from utils.config import DEFAULT_CONFIDENCE_THRESHOLD, ALERT_STATUSES
 from utils.sms_service import SMSService
+from utils.escalation_service import EscalationService
 
 try:
     from fastapi import FastAPI, File, UploadFile, Query, HTTPException, Body
     from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.responses import HTMLResponse, PlainTextResponse
     import uvicorn
     HAS_FASTAPI = True
 except ImportError:
@@ -40,6 +44,16 @@ safety_agent = SafetyAgent()
 db_manager = SafetyDBManager()
 sms_service = SMSService(db_manager=db_manager)
 risk_engine = ConstructionRiskEngine(db_manager=db_manager)
+escalation_service = EscalationService(db_manager=db_manager, sms_service=sms_service)
+intelligence_engine = ConstructionRiskIntelligenceEngine(
+    db_manager=db_manager,
+    safety_agent=safety_agent,
+    escalation_service=escalation_service,
+)
+reporting_agent = ReportingAgent(
+    db_manager=db_manager,
+    intelligence_engine=intelligence_engine,
+)
 
 
 # ------------------------------------------------------------------
@@ -80,11 +94,28 @@ if HAS_FASTAPI:
         incidents: List[Dict] = []
         safety_trends: List[Dict] = []
 
+    class ProjectCreateRequest(BaseModel):
+        project_id: str
+        project_name: Optional[str] = None
+        status: Optional[str] = "Active"
+        metadata: Optional[Dict] = None
+
+    class RiskOverrideRequest(BaseModel):
+        project_id: str
+        new_risk_score: float
+        reason: str
+        user_name: Optional[str] = "Enterprise Supervisor"
+
+    class ReportGenerateRequest(BaseModel):
+        project_id: Optional[str] = "PRJ-METRO-01"
+        report_type: str = "daily_operational"
+        export_format: Optional[str] = "json"
+
     @app.get("/")
     def root():
         return {
             "platform": "Construction Risk Intelligence Platform",
-            "milestone": "Milestone 2: Safety Intelligence & Worker Protection",
+            "milestone": "Milestones 1-4: Enterprise Risk Intelligence & Reporting",
             "status": "Online",
             "endpoints": [
                 "/api/safety/analyze",
@@ -93,7 +124,15 @@ if HAS_FASTAPI:
                 "/api/safety/analytics",
                 "/api/safety/workers",
                 "/api/safety/sms-logs",
-                "/api/safety/sms/send",
+                "/api/v1/enterprise/dashboard",
+                "/api/v1/enterprise/projects",
+                "/api/v1/risk/global-score",
+                "/api/v1/risk/override",
+                "/api/v1/risk/predictive-forecast",
+                "/api/v1/reports/generate",
+                "/api/v1/reports",
+                "/api/v1/system/agent-health",
+                "/api/v1/audit/trail",
             ]
         }
 
@@ -219,6 +258,133 @@ if HAS_FASTAPI:
             message=payload.message,
         )
         return {"status": "success", "dispatch": result}
+
+    # ------------------------------------------------------------------
+    # Milestone 4 — Enterprise Dashboard & Multi-Project Aggregation
+    # ------------------------------------------------------------------
+    @app.get("/api/v1/enterprise/dashboard")
+    def get_enterprise_dashboard(project_id: Optional[str] = None):
+        """Consolidated enterprise dashboard metrics, agent health, reports, and risk status."""
+        return db_manager.get_enterprise_dashboard_data(project_id=project_id)
+
+    @app.get("/api/v1/enterprise/projects")
+    def get_enterprise_projects():
+        """Retrieve portfolio risk rankings, portfolio average, and hotspot projects."""
+        return intelligence_engine.get_portfolio_overview()
+
+    @app.post("/api/v1/enterprise/projects")
+    def register_or_update_project(payload: ProjectCreateRequest):
+        """Register or update an enterprise project profile."""
+        saved_id = db_manager.save_project({
+            "project_id": payload.project_id,
+            "project_name": payload.project_name or payload.project_id,
+            "status": payload.status or "Active",
+            "metadata": payload.metadata or {},
+        })
+        return {"status": "success", "project_id": saved_id}
+
+    # ------------------------------------------------------------------
+    # Milestone 4 — Global Risk Scoring & Predictive Forecasting
+    # ------------------------------------------------------------------
+    @app.get("/api/v1/risk/global-score")
+    def get_global_risk_score(project_id: Optional[str] = None):
+        """Calculates unified 0–100 Project Risk Score with weighted sub-agent indicators."""
+        return intelligence_engine.calculate_global_risk_score(project_id=project_id)
+
+    @app.post("/api/v1/risk/override")
+    def override_risk_score(payload: RiskOverrideRequest):
+        """Allows authorized supervisor to override risk score with mandatory audit justification."""
+        result = intelligence_engine.apply_manual_risk_override(
+            project_id=payload.project_id,
+            new_risk_score=payload.new_risk_score,
+            reason=payload.reason,
+            user_name=payload.user_name or "Enterprise Supervisor",
+        )
+        return {"status": "success", "override": result}
+
+    @app.get("/api/v1/risk/predictive-forecast")
+    def get_predictive_forecast(project_id: Optional[str] = None):
+        """Forecast incident probability %, recurring violation patterns, and safety ROI cost avoidance."""
+        return intelligence_engine.run_predictive_analytics(project_id=project_id)
+
+    # ------------------------------------------------------------------
+    # Milestone 4 — Reporting Intelligence & Multi-Format Exports
+    # ------------------------------------------------------------------
+    @app.post("/api/v1/reports/generate")
+    def generate_report(payload: ReportGenerateRequest):
+        """Generate and persist an automated report (daily_operational, executive_summary, audit_report, project_health)."""
+        rtype = payload.report_type.lower()
+        fmt = (payload.export_format or "json").lower()
+
+        if rtype == "daily_operational":
+            result = reporting_agent.generate_daily_operational_report(
+                project_id=payload.project_id, export_format=fmt
+            )
+        elif rtype == "executive_summary":
+            result = reporting_agent.generate_executive_summary(
+                project_id=payload.project_id, export_format=fmt
+            )
+        elif rtype == "audit_report":
+            result = reporting_agent.generate_audit_packet(
+                project_id=payload.project_id or "PRJ-METRO-01", export_format=fmt
+            )
+        elif rtype == "project_health":
+            result = reporting_agent.generate_project_health_report(
+                project_id=payload.project_id or "PRJ-METRO-01", export_format=fmt
+            )
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid report_type '{payload.report_type}'. Choose from: daily_operational, executive_summary, audit_report, project_health."
+            )
+
+        if fmt == "html":
+            return HTMLResponse(content=result.get("rendered", str(result)))
+        elif fmt in ("markdown", "md"):
+            return PlainTextResponse(content=result.get("rendered", str(result)))
+        return result
+
+    @app.get("/api/v1/reports")
+    def list_reports(
+        project_id: Optional[str] = None,
+        report_type: Optional[str] = None,
+        limit: int = Query(50, ge=1, le=200),
+    ):
+        """Query persisted enterprise reports."""
+        reports = db_manager.get_reports(project_id=project_id, report_type=report_type, limit=limit)
+        return {"count": len(reports), "reports": reports}
+
+    @app.get("/api/v1/reports/{report_id}")
+    def get_report_by_id(report_id: str, format: Optional[str] = Query("json")):
+        """Fetch a specific report by ID in JSON, Markdown, or HTML/PDF-ready format."""
+        report = db_manager.get_report(report_id)
+        if not report:
+            raise HTTPException(status_code=404, detail=f"Report '{report_id}' not found.")
+        fmt = (format or "json").lower()
+        if fmt == "json":
+            return report
+        rendered = reporting_agent.export_report_by_id(report_id, export_format=fmt)
+        if fmt == "html":
+            return HTMLResponse(content=rendered or "")
+        return PlainTextResponse(content=rendered or "")
+
+    # ------------------------------------------------------------------
+    # Milestone 4 — Agent Performance & Immutable Audit Trail
+    # ------------------------------------------------------------------
+    @app.get("/api/v1/system/agent-health")
+    def get_system_agent_health():
+        """Retrieve real-time agent latency, efficiency, accuracy against enterprise baselines."""
+        return intelligence_engine.get_agent_health_report()
+
+    @app.get("/api/v1/audit/trail")
+    def get_audit_trail(
+        agent: Optional[str] = None,
+        action: Optional[str] = None,
+        limit: int = Query(100, ge=1, le=500),
+    ):
+        """Retrieve immutable audit trail entries with optional agent and action filters."""
+        trail = db_manager.get_audit_trail(agent=agent, action=action, limit=limit)
+        return {"count": len(trail), "audit_trail": trail}
 
 
 def _sanitize_report(report: Dict) -> Dict:

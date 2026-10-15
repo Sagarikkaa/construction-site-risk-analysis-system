@@ -161,6 +161,60 @@ class SafetyDBManager:
                 )
             """)
 
+            # Milestone 4 — Projects table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS projects (
+                    project_id TEXT PRIMARY KEY,
+                    project_name TEXT NOT NULL,
+                    status TEXT DEFAULT 'Active',
+                    global_risk_score REAL DEFAULT 0.0,
+                    risk_level TEXT DEFAULT 'Low',
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    metadata_json TEXT DEFAULT '{}'
+                )
+            """)
+
+            # Milestone 4 — Reports table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS reports (
+                    report_id TEXT PRIMARY KEY,
+                    project_id TEXT NOT NULL,
+                    report_type TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    generated_at TEXT NOT NULL,
+                    generated_by TEXT NOT NULL,
+                    content_json TEXT NOT NULL,
+                    status TEXT DEFAULT 'Final'
+                )
+            """)
+
+            # Milestone 4 — Audit Trail table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS audit_trail (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT NOT NULL,
+                    action TEXT NOT NULL,
+                    agent TEXT NOT NULL,
+                    details_json TEXT DEFAULT '{}',
+                    user_override INTEGER DEFAULT 0
+                )
+            """)
+
+            # Milestone 4 — Agent Performance table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS agent_performance (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT NOT NULL,
+                    agent_name TEXT NOT NULL,
+                    metric_name TEXT NOT NULL,
+                    metric_value REAL NOT NULL,
+                    tasks_processed INTEGER DEFAULT 0,
+                    tasks_succeeded INTEGER DEFAULT 0,
+                    details_json TEXT DEFAULT '{}'
+                )
+            """)
+
             conn.commit()
 
     # ------------------------------------------------------------------
@@ -596,5 +650,282 @@ class SafetyDBManager:
             cursor.execute("SELECT * FROM sms_alerts ORDER BY id DESC LIMIT ?", (limit,))
             rows = cursor.fetchall()
             return [dict(r) for r in rows]
+
+    # ------------------------------------------------------------------
+    # Milestone 4 — Projects
+    # ------------------------------------------------------------------
+    def save_project(self, project: Dict) -> str:
+        """Create or update a project record with its latest risk score."""
+        with self.get_connection() as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO projects
+                    (project_id, project_name, status, global_risk_score,
+                     risk_level, created_at, updated_at, metadata_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    project["project_id"],
+                    project.get("project_name", project["project_id"]),
+                    project.get("status", "Active"),
+                    project.get("global_risk_score", 0.0),
+                    project.get("risk_level", "Low"),
+                    project.get("created_at", datetime.now().isoformat()),
+                    datetime.now().isoformat(),
+                    json.dumps(project.get("metadata", {})),
+                ),
+            )
+        return project["project_id"]
+
+    def get_project(self, project_id: str) -> Optional[Dict]:
+        with self.get_connection() as conn:
+            row = conn.execute(
+                "SELECT * FROM projects WHERE project_id = ?", (project_id,)
+            ).fetchone()
+            return dict(row) if row else None
+
+    def get_all_projects(self) -> List[Dict]:
+        with self.get_connection() as conn:
+            rows = conn.execute(
+                "SELECT * FROM projects ORDER BY updated_at DESC"
+            ).fetchall()
+            return [dict(r) for r in rows]
+
+    def update_project_risk_score(
+        self, project_id: str, risk_score: float, risk_level: str
+    ) -> None:
+        with self.get_connection() as conn:
+            conn.execute(
+                """
+                UPDATE projects
+                SET global_risk_score = ?, risk_level = ?, updated_at = ?
+                WHERE project_id = ?
+                """,
+                (risk_score, risk_level, datetime.now().isoformat(), project_id),
+            )
+
+    # ------------------------------------------------------------------
+    # Milestone 4 — Reports
+    # ------------------------------------------------------------------
+    def save_report(self, report: Dict) -> str:
+        """Persist a generated report (daily, executive, audit, etc.)."""
+        with self.get_connection() as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO reports
+                    (report_id, project_id, report_type, title,
+                     generated_at, generated_by, content_json, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    report["report_id"],
+                    report.get("project_id", "GLOBAL"),
+                    report["report_type"],
+                    report.get("title", "Untitled Report"),
+                    report.get("generated_at", datetime.now().isoformat()),
+                    report.get("generated_by", "ReportingAgent"),
+                    json.dumps(report.get("content", {})),
+                    report.get("status", "Final"),
+                ),
+            )
+        return report["report_id"]
+
+    def get_report(self, report_id: str) -> Optional[Dict]:
+        with self.get_connection() as conn:
+            row = conn.execute(
+                "SELECT * FROM reports WHERE report_id = ?", (report_id,)
+            ).fetchone()
+            if row:
+                item = dict(row)
+                try:
+                    item["content"] = json.loads(item.get("content_json", "{}"))
+                except (TypeError, json.JSONDecodeError):
+                    item["content"] = {}
+                return item
+            return None
+
+    def get_reports(
+        self,
+        project_id: Optional[str] = None,
+        report_type: Optional[str] = None,
+        limit: int = 50,
+    ) -> List[Dict]:
+        with self.get_connection() as conn:
+            query = "SELECT * FROM reports WHERE 1=1"
+            params: list = []
+            if project_id:
+                query += " AND project_id = ?"
+                params.append(project_id)
+            if report_type:
+                query += " AND report_type = ?"
+                params.append(report_type)
+            query += " ORDER BY generated_at DESC LIMIT ?"
+            params.append(limit)
+            rows = conn.execute(query, params).fetchall()
+            results = []
+            for row in rows:
+                item = dict(row)
+                try:
+                    item["content"] = json.loads(item.get("content_json", "{}"))
+                except (TypeError, json.JSONDecodeError):
+                    item["content"] = {}
+                results.append(item)
+            return results
+
+    # ------------------------------------------------------------------
+    # Milestone 4 — Audit Trail
+    # ------------------------------------------------------------------
+    def log_audit_trail(
+        self,
+        action: str,
+        agent: str,
+        details: Optional[Dict] = None,
+        user_override: bool = False,
+    ) -> int:
+        """Append an immutable audit-trail entry."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO audit_trail
+                    (timestamp, action, agent, details_json, user_override)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    datetime.now().isoformat(),
+                    action,
+                    agent,
+                    json.dumps(details or {}),
+                    1 if user_override else 0,
+                ),
+            )
+            conn.commit()
+            return cursor.lastrowid
+
+    def get_audit_trail(
+        self,
+        agent: Optional[str] = None,
+        action: Optional[str] = None,
+        limit: int = 200,
+    ) -> List[Dict]:
+        with self.get_connection() as conn:
+            query = "SELECT * FROM audit_trail WHERE 1=1"
+            params: list = []
+            if agent:
+                query += " AND agent = ?"
+                params.append(agent)
+            if action:
+                query += " AND action = ?"
+                params.append(action)
+            query += " ORDER BY id DESC LIMIT ?"
+            params.append(limit)
+            rows = conn.execute(query, params).fetchall()
+            results = []
+            for row in rows:
+                item = dict(row)
+                try:
+                    item["details"] = json.loads(item.get("details_json", "{}"))
+                except (TypeError, json.JSONDecodeError):
+                    item["details"] = {}
+                results.append(item)
+            return results
+
+    # ------------------------------------------------------------------
+    # Milestone 4 — Agent Performance
+    # ------------------------------------------------------------------
+    def log_agent_performance(self, record: Dict) -> int:
+        """Record an agent performance measurement."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO agent_performance
+                    (timestamp, agent_name, metric_name, metric_value,
+                     tasks_processed, tasks_succeeded, details_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    record.get("timestamp", datetime.now().isoformat()),
+                    record["agent_name"],
+                    record.get("metric_name", "efficiency"),
+                    record["metric_value"],
+                    record.get("tasks_processed", 0),
+                    record.get("tasks_succeeded", 0),
+                    json.dumps(record.get("details", {})),
+                ),
+            )
+            conn.commit()
+            return cursor.lastrowid
+
+    def get_agent_performance(
+        self, agent_name: Optional[str] = None, limit: int = 100
+    ) -> List[Dict]:
+        with self.get_connection() as conn:
+            if agent_name:
+                rows = conn.execute(
+                    "SELECT * FROM agent_performance WHERE agent_name = ? ORDER BY id DESC LIMIT ?",
+                    (agent_name, limit),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM agent_performance ORDER BY id DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
+            results = []
+            for row in rows:
+                item = dict(row)
+                try:
+                    item["details"] = json.loads(item.get("details_json", "{}"))
+                except (TypeError, json.JSONDecodeError):
+                    item["details"] = {}
+                results.append(item)
+            return results
+
+    def get_latest_agent_metrics(self) -> Dict[str, Dict]:
+        """Return the most recent performance record for each agent."""
+        with self.get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT ap.* FROM agent_performance ap
+                INNER JOIN (
+                    SELECT agent_name, MAX(id) as max_id
+                    FROM agent_performance GROUP BY agent_name
+                ) latest ON ap.id = latest.max_id
+                ORDER BY ap.agent_name
+                """
+            ).fetchall()
+            result = {}
+            for row in rows:
+                item = dict(row)
+                try:
+                    item["details"] = json.loads(item.get("details_json", "{}"))
+                except (TypeError, json.JSONDecodeError):
+                    item["details"] = {}
+                result[item["agent_name"]] = item
+            return result
+
+    # ------------------------------------------------------------------
+    # Milestone 4 — Enterprise Dashboard Aggregate
+    # ------------------------------------------------------------------
+    def get_enterprise_dashboard_data(self, project_id: Optional[str] = None) -> Dict:
+        """Consolidated enterprise data for the intelligence dashboard."""
+        analytics = self.get_analytics_summary()
+        risk_summary = self.get_project_risk_summary(project_id)
+        agent_metrics = self.get_latest_agent_metrics()
+        recent_reports = self.get_reports(project_id=project_id, limit=10)
+        recent_audit = self.get_audit_trail(limit=20)
+        projects = self.get_all_projects()
+
+        return {
+            "safety_analytics": analytics,
+            "risk_summary": risk_summary,
+            "agent_performance": agent_metrics,
+            "recent_reports": [
+                {k: v for k, v in r.items() if k != "content_json"} for r in recent_reports
+            ],
+            "recent_audit_entries": recent_audit,
+            "projects": projects,
+            "generated_at": datetime.now().isoformat(),
+        }
 
 

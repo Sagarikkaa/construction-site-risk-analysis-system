@@ -5028,5 +5028,95 @@
     "worker_count": 2,
     "risk_score": 100,
     "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-24T19:34:09.925714",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-24T19:34:16.645433",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-24T19:34:30.042173",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-28T20:54:05.741960",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-28T20:54:12.486406",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-28T20:54:33.882087",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-29T12:19:13.061239",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-29T12:19:48.392076",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
+  },
+  {
+    "timestamp": "2026-09-29T12:20:45.579171",
+    "filename": "Worker-working-without-safety-boots-hand-gloves-head-protection.png",
+    "analysis_type": "image",
+    "total_objects": 5,
+    "hazard_count": 2,
+    "worker_count": 2,
+    "risk_score": 100,
+    "risk_level": "Critical"
   }
 ]

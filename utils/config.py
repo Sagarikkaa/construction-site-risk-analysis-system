@@ -163,4 +163,54 @@ DEFAULT_WORKER_PHONES = {
     "Worker-07": "+91 6370671276",
 }
 
+# ---------------------------------------------------------------------------
+# Milestone 4 — Reporting Intelligence & Enterprise Deployment
+# ---------------------------------------------------------------------------
+
+# Global Risk Scoring Weights (must sum to 1.0)
+GLOBAL_RISK_WEIGHTS = {
+    "active_hazards": 0.25,
+    "ppe_compliance": 0.25,
+    "regulatory_violations": 0.25,
+    "insurance_exposure": 0.25,
+}
+
+# Agent Performance Baseline Thresholds (%)
+AGENT_PERFORMANCE_BASELINES = {
+    "site_risk_agent": {"efficiency": 96.0, "accuracy": 94.0},
+    "safety_agent": {"efficiency": 94.0, "accuracy": 94.0},
+    "compliance_agent": {"efficiency": 95.0, "accuracy": 95.0},
+    "insurance_agent": {"efficiency": 92.0, "accuracy": 92.0},
+}
+
+# Predictive Analytics Cost Model
+COST_PER_INCIDENT_PREVENTED = 35000.0   # USD estimated cost savings per prevented incident
+BASELINE_INCIDENT_RATE = 0.12           # Historical incidents per worker per month
+COMPLIANCE_IMPROVEMENT_BASELINE = 72.0  # Baseline compliance % before platform deployment
+
+# Escalation Workflow Configuration
+ESCALATION_RULES = {
+    "LOW":      ["log"],
+    "MEDIUM":   ["log", "email"],
+    "HIGH":     ["log", "email", "sms"],
+    "CRITICAL": ["log", "email", "sms", "webhook"],
+}
+
+# SMTP Email Settings (loaded from .env)
+SMTP_HOST = os.environ.get("SMTP_HOST", "localhost")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER = os.environ.get("SMTP_USER", "")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+SMTP_FROM_EMAIL = os.environ.get("SMTP_FROM_EMAIL", "alerts@construction-risk.local")
+ESCALATION_EMAIL_RECIPIENTS = [
+    e.strip() for e in os.environ.get("ESCALATION_EMAIL_RECIPIENTS", "").split(",") if e.strip()
+]
+
+# Slack / Microsoft Teams Webhook URLs (loaded from .env)
+SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "")
+TEAMS_WEBHOOK_URL = os.environ.get("TEAMS_WEBHOOK_URL", "")
+
+# Report Configuration
+REPORT_TYPES = ["daily_operational", "executive_summary", "audit_report", "project_health"]
+REPORT_RETENTION_DAYS = 90
 
